@@ -1,15 +1,22 @@
 # AI use log
 
-## 2026-10-24 - Chuẩn bị repo Lab 03
+## 2026-10-24 - Repository preparation
 
-- Công cụ: OpenAI Codex.
-- Yêu cầu: tạo repo `assistant-core-lab-group04` tại thư mục môn học,
-  lấy code từ `public_materials/lab03`, làm các bước cơ bản rồi đề xuất chia việc.
-- Phạm vi hỗ trợ: nhập code gốc, tạo khung package/config, characterisation tests,
-  hướng dẫn Windows, kiến trúc đích, checklist và đề xuất trách nhiệm cho 6 người.
-- Code gốc trong `lab03/` được giữ nguyên; chưa triển khai các module refactor hoặc tính năng H1.
-- Kiểm chứng tự động: xem `docs/lab3/bootstrap-verification.md` sau khi chạy kiểm tra.
-- Review thủ công của sinh viên: chưa ghi nhận; thành viên cần tự đọc và xác nhận phần mình sử dụng.
+- Tool: OpenAI Codex.
+- Request: prepare the Group 04 starter repository using `public_materials/lab03`.
+- Assistance: imported the original course files, prepared the package/configuration skeleton,
+  wrote deterministic characterisation tests, and drafted setup instructions and the target architecture.
+- The original files under `lab03/` were preserved. Refactored modules and an H1 feature were not implemented.
+- Student manual review: not recorded. Each member must inspect and verify any material they use.
 
-Khi làm H1, thêm bản ghi riêng về prompt, tính năng, file thay đổi và review thực tế.
-Không dùng bản ghi khởi tạo này thay cho yêu cầu ba cải tiến code AI của bài H1.
+## 2026-10-24 - Repository cleanup
+
+- Tool: OpenAI Codex.
+- Request: use English throughout the repository, remove material outside the lab requirements,
+  keep task assignments outside the repository, and leave implementation to the team.
+- Assistance: translated repository documentation, consolidated lab instructions in the README,
+  removed planning/progress/verification documents, and moved the team assignment outside the repository.
+- No refactored service or homework feature was implemented during this cleanup.
+
+For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
+These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.

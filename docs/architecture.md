@@ -1,21 +1,22 @@
-# Kiến trúc đích của assistant_core
+# Target architecture for assistant_core
 
-Trạng thái: thiết kế theo tutorial Lab 03, chưa triển khai ngoài khung package.
+Status: target design from the Lab 03 tutorial. Only the package skeleton exists so far.
+Update this document to match the implementation when the team completes the refactor.
 
-## 1. Trách nhiệm từng module
+## 1. Module responsibilities
 
-| Module | Trách nhiệm |
+| Module | Responsibility |
 | --- | --- |
-| `config.py` | Đọc và kiểm tra cấu hình từ môi trường / `.env` |
-| `errors.py` | `AssistantError`, `ConfigError`, `DataError`, `InvalidRequest`, `ProviderError` |
-| `models.py` | Các kiểu công khai `Message`, `Response`, `Intent`, `Source` |
-| `router.py` | Chọn intent theo quy tắc |
-| `knowledge.py` | Nạp CSV/JSON, tra phòng ban và tìm quy định |
-| `tools.py` | Phân tích số tín chỉ và tính học phí một cách xác định |
-| `responder.py` | Protocol `Responder`, template và stub AI |
-| `service.py` | Kết nối các thành phần; điểm vào chung cho caller |
-| `logging_setup.py` | JSON logs tới stderr, không lộ khóa hoặc toàn bộ câu hỏi |
-| `__main__.py` | CLI; câu trả lời ra stdout |
+| `config.py` | Load and validate settings from environment variables and `.env` |
+| `errors.py` | Define `AssistantError`, `ConfigError`, `DataError`, `InvalidRequest`, and `ProviderError` |
+| `models.py` | Define the public types `Message`, `Response`, `Intent`, and `Source` |
+| `router.py` | Select an intent using simple rules |
+| `knowledge.py` | Load CSV/JSON data, look up offices, and search handbook rules |
+| `tools.py` | Parse credit counts and calculate tuition deterministically |
+| `responder.py` | Define the `Responder` protocol, template responder, and provider stub |
+| `service.py` | Coordinate the components through one public entry point |
+| `logging_setup.py` | Write structured JSON logs to stderr without keys or full user messages |
+| `__main__.py` | Provide the CLI and write answers to stdout |
 
 ## 2. Service interface
 
@@ -23,18 +24,18 @@ Trạng thái: thiết kế theo tutorial Lab 03, chưa triển khai ngoài khun
 AssistantService.handle(msg: Message) -> Response
 ```
 
-- `Message`: `text` dài 1-2000 ký tự; `session_id` mặc định `local`.
-- `Response`: `answer`, `intent`, `sources: list[Source]`, `degraded: bool`.
-- `Source`: `id`, `title`.
-- `Intent`: `greeting`, `fee`, `office`, `rule`, `unknown`.
-- Input sai được Pydantic từ chối ở boundary.
-- Cấu hình hoặc file dữ liệu sai làm startup thất bại bằng lỗi có tên.
-- `ProviderError` dùng template fallback; giữ nguồn và đặt `degraded=True`.
+- `Message`: `text` has 1-2000 characters; `session_id` defaults to `local`.
+- `Response`: `answer`, `intent`, `sources: list[Source]`, and `degraded: bool`.
+- `Source`: `id` and `title`.
+- `Intent`: `greeting`, `fee`, `office`, `rule`, and `unknown`.
+- Pydantic rejects invalid input at the boundary with `ValidationError`.
+- Missing or invalid configuration/data prevents startup with `ConfigError` or `DataError`.
+- A `ProviderError` triggers the template fallback, preserves sources, and sets `degraded=True`.
 
-## 3. Ba quyết định thiết kế ban đầu
+## 3. Three design decisions
 
-1. Học phí nằm trong hàm thuần ở `tools.py`: kết quả chính xác, dễ test, không do LLM tính.
-2. Provider ở sau `Responder` và được truyền vào service: thay provider hoặc giả lập lỗi mà không sửa service.
-3. Cấu hình đến từ môi trường, mô tả bằng `.env.example`: không cần sửa code hoặc commit khóa thật.
-
-Khi triển khai, nhóm cập nhật tài liệu để phản ánh code thực tế và ghi lại các quyết định thay đổi.
+1. Calculate tuition with pure functions in `tools.py` so results are exact and easy to test.
+2. Inject a provider behind the `Responder` protocol so it can be replaced or made to fail in tests
+   without changing the service. The stub keeps tests offline and independent of API keys.
+3. Read configuration from the environment and document it in `.env.example` so settings can change
+   without editing code or committing real keys.

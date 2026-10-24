@@ -1,30 +1,17 @@
 # assistant-core-lab-group04
 
-Repo mới của nhóm 04 cho CSC10014 Lab 03: Engineering a Maintainable Python Service.
+Group 04 starter repository for CSC10014 Lab 03: Engineering a Maintainable Python Service.
 
-## Trạng thái hiện tại
+## Current status
 
-- Đã nhập nguyên trạng code và worksheet của môn vào `lab03/`.
-- Đã tạo khung package, dữ liệu làm việc, cấu hình thư viện và template môi trường.
-- Có 9 test ghi lại hành vi của code gốc, chạy offline và không phụ thuộc lỗi AI ngẫu nhiên.
-- Chưa triển khai các module refactor hoặc CLI của `assistant_core`.
-- Chưa tạo repo GitHub, cấu hình remote, branch protection, CI hoặc tag hoàn thành.
+The repository contains the original course materials, the package skeleton, working data,
+pinned dependencies, worksheet templates, and 9 deterministic characterisation tests of the monolith.
+The refactored modules and CLI are left for the team to implement.
+Passing the current tests does not mean that the refactored package is complete.
 
-Các test hiện tại chỉ bảo vệ bản gốc. Chúng chưa chứng minh package refactor đạt yêu cầu Lab 03.
-Xem `docs/lab3/progress.md` để biết phần còn lại.
+## Setup
 
-## Chạy trên Windows PowerShell
-
-Chạy tại thư mục gốc repo. Máy đã được chuẩn bị có thể dùng trực tiếp Python trong `.venv`:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m ruff check .
-.\.venv\Scripts\python.exe -m ruff format --check .
-.\.venv\Scripts\python.exe lab03\monolith\assistant_monolith.py --test
-```
-
-Khi clone sang máy khác, dùng Python 3.10 trở lên để tạo môi trường riêng:
+Use Python 3.10 or later. Run these commands from the repository root in Windows PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -32,35 +19,67 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e .
 ```
 
-Không cần activate môi trường hoặc đổi PowerShell execution policy.
-`.env.example` là mẫu cho module cấu hình sắp triển khai; nếu cần, copy thành `.env`.
-Script gốc chưa đọc các biến trong `.env`.
+The environment does not need to be activated when its Python executable is called directly.
+`.env.example` documents the settings for the configuration module to be implemented.
+The original monolith does not read these environment variables.
+Keep `.env` and real API keys out of Git.
 
-## Cấu trúc
+## Run the original script and checks
 
-```text
-lab03/                  # Bản gốc của môn, giữ nguyên để đối chiếu
-data/                   # CSV/JSON cho package mới
-src/assistant_core/     # Hiện mới có __init__.py
-tests/                  # Characterisation tests của monolith
-docs/architecture.md    # Thiết kế đích, chưa phải mô tả code hoàn thiện
-docs/lab3/              # Worksheet, tiến độ và đề xuất phân công
-docs/ai-use-log.md      # Ghi nhận việc dùng AI khi khởi tạo
-UPSTREAM.md             # Nguồn và commit gốc
-CONTRIBUTING.md         # Quy trình nhánh và PR
+```powershell
+.\.venv\Scripts\python.exe lab03\monolith\assistant_monolith.py --test
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m ruff format --check .
 ```
 
-Ruff bỏ qua `lab03/monolith/` vì đây là ví dụ cố ý có lỗi cần giữ nguyên.
-Ruff vẫn kiểm tra `src/` và `tests/`; không dùng việc lint bản khung sạch để kết luận lab đã xong.
+The original demo includes a deliberately unreliable provider stub.
+The characterisation tests replace that provider when needed so they run deterministically and offline.
+Ruff excludes the original teaching monolith; it checks the new package and tests.
 
-## Làm việc theo nhóm
+## Repository layout
 
-Mỗi người tạo nhánh cá nhân `refactor/assistant-core-<ten>`, hoàn thành refactor và mở PR.
-Không push trực tiếp vào `main` sau khi nhóm bắt đầu làm việc.
-Đề xuất chia trách nhiệm bản tích hợp cho 6 người nằm ở `docs/lab3/team-plan.md`.
-Mỗi người vẫn phải có bài cá nhân, worksheet và bài AI extension riêng.
+```text
+lab03/                          Original monolith, data, and worksheet templates
+data/                           Working CSV and JSON data for the new package
+src/assistant_core/             Package skeleton; implementation pending
+tests/                          Characterisation tests of the monolith
+docs/architecture.md            Target modules, service interface, and design decisions
+docs/ai-use-log.md              Record of AI assistance
+docs/lab3/before_after.md        Individual maintainability worksheet
+docs/lab3/ai_extension_review.md Individual AI-extension review template
+pyproject.toml                  Package, pytest, and Ruff configuration
+requirements.txt                Exact dependency versions
+.env.example                    Configuration template
+```
 
-## Nguồn
+## Lab deliverables
 
-[Lab 03 - public_materials](https://github.com/CSC10014-at-fit-hcmus/public_materials/tree/main/lab03).
-Chi tiết phiên bản và xác minh file xem `UPSTREAM.md`.
+Each member completes the full refactor on a branch named `refactor/assistant-core-<name>`,
+runs tests after each step, fills in `docs/lab3/before_after.md`, and opens a PR.
+Submit the individual PR link on LMS at the end of the session; a draft PR is accepted.
+
+The team reviews the individual PRs, selects one version as the base, and integrates improvements
+with appropriate contributor credit. The final package must include:
+
+- The modules and public interface documented in `docs/architecture.md`.
+- Environment-based configuration, typed models, named exceptions, and a tested provider fallback.
+- Greeting, tuition, office lookup, and rule search with source information.
+- Structured logs without API keys or full user messages.
+- At least 10 passing tests, including characterisation tests and tests of the refactored package.
+- Clean Ruff checks and formatting, pinned dependencies, and an architecture note with three decisions.
+
+For H1, each member adds an AI-assisted feature, manually improves at least three aspects of its code,
+documents the changes in `docs/lab3/ai_extension_review.md`, records AI use, and submits a merged PR link.
+For H2, complete W3-1 through W3-4 and the T-W3 team integration of `study_planner`.
+For H3, complete the assigned reading and reflection.
+
+The team submission (`v0.3-core`), H1, and H2 (`py-w3-done`) are due at 23:59 on the day before Lab 4.
+Confirm the calendar date on LMS. Completion tags should only be created after the corresponding work is done.
+
+## Course materials
+
+The five original files under `lab03/` are preserved unchanged from
+[the course repository](https://github.com/CSC10014-at-fit-hcmus/public_materials/tree/f30c605c6ff376ac448ddb00fa82ae36347e29a9/lab03),
+commit `f30c605c6ff376ac448ddb00fa82ae36347e29a9`.
+The root `data/` files are working copies for the refactored package.
