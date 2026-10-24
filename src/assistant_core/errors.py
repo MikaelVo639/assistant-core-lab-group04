@@ -1,18 +1,36 @@
+"""Exception hierarchy for assistant_core.
+
+Callers catch ``AssistantError`` to handle any domain failure, or a subclass to
+handle one category. Each subclass carries a stable machine-readable ``code``
+so logs and the CLI can report the category without parsing messages.
+"""
+
+
 class AssistantError(Exception):
-    """Base exception for assistant-core errors."""
+    """Base class for all assistant errors."""
+
+    code = "assistant_error"
 
 
 class ConfigError(AssistantError):
-    """Raised when environment or settings are missing or invalid."""
+    """Configuration is missing or invalid."""
+
+    code = "config_error"
 
 
 class DataError(AssistantError):
-    """Raised when data files are missing or unparseable."""
+    """A knowledge file is missing or malformed."""
+
+    code = "data_error"
 
 
 class InvalidRequest(AssistantError):
-    """Raised when a user request is invalid or cannot be fulfilled."""
+    """The user's request cannot be processed as given."""
+
+    code = "invalid_request"
 
 
 class ProviderError(AssistantError):
-    """Raised when an external LLM provider fails."""
+    """The AI provider failed (timeout, outage, bad response)."""
+
+    code = "provider_error"
