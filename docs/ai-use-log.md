@@ -20,3 +20,18 @@
 
 For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
 These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.
+
+## 2026-10-24 - Light-orange CLI responses (@LePhanDucMan-pa)
+
+- Tool: OpenAI Codex.
+- Prompt: add a command-line feature that displays the human-facing service response in
+  light orange while leaving the automatically generated JSON log plain white.
+- Feature: isolated ANSI styling to answers written to stdout; structured logs on stderr
+  remain uncolored and machine-readable.
+- Improvements after review: added an explicit reset sequence, disabled color for redirected
+  output and `NO_COLOR`, added a `--no-color` option, and covered answer and log behavior with tests.
+- Changed files: `src/assistant_core/console.py`, `src/assistant_core/__main__.py`, CLI color tests,
+  logging tests, `README.md`, `docs/architecture.md`, and `docs/lab3/ai_extension_review.md`.
+- Verification performed by @LePhanDucMan-pa: exercised greeting, tuition, office, handbook,
+  unknown-question, and invalid-credit responses in PowerShell; automated suite reached 34 passing tests.
+- Manual code review: @LePhanDucMan-pa must confirm understanding of every changed line before submission.
