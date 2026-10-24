@@ -42,3 +42,18 @@ These preparation entries do not satisfy the requirement to document three impro
 - Verification performed by @LePhanDucMan-pa: exercised greeting, tuition, office, handbook,
   unknown-question, and invalid-credit responses in PowerShell; automated suite reached 34 passing tests.
 - Manual code review: @LePhanDucMan-pa must confirm understanding of every changed line before submission.
+
+## 2026-10-25 - Responder and structured logging (@LePhanDucMan-pa)
+
+- Tool: OpenAI Codex.
+- Request: implement the assigned responder and logging modules after merging the latest `main`, following
+  the Lab 03 and Git/GitHub tutorials and the repository's existing public contracts.
+- Assistance: implemented the `Responder.explain()` protocol, deterministic template and stub responders,
+  simulated `ProviderError`, application-scoped JSON logging to stderr, and focused unit tests.
+- Privacy review: logs allow only intent, latency, session, and degraded metadata in addition to the standard
+  level, logger, and event message; tests verify that unapproved question and API-key metadata is omitted.
+- Integration review: retained the merged `knowledge.Rule` and `ProviderError` types, avoided edits to modules
+  owned by teammates, and used the interface expected by the service integration guide.
+- Verification: 75 tests passed; `ruff check .` and `ruff format --check .` both passed.
+- Student manual review: @LePhanDucMan-pa must inspect the implementation, explain the fallback and logging
+  behavior, and confirm all verification results before submission.
