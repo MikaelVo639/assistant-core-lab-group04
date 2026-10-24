@@ -1,7 +1,6 @@
 # Target architecture for assistant_core
 
-Status: target design from the Lab 03 tutorial. Only the package skeleton exists so far.
-Update this document to match the implementation when the team completes the refactor.
+Status: implemented. All modules in the table below exist under `src/assistant_core/`.
 
 ## 1. Module responsibilities
 
