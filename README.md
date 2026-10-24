@@ -4,10 +4,13 @@ Group 04 starter repository for CSC10014 Lab 03: Engineering a Maintainable Pyth
 
 ## Current status
 
-The repository contains the original course materials, the package skeleton, working data,
-pinned dependencies, worksheet templates, and 9 deterministic characterisation tests of the monolith.
-The refactored modules and CLI are left for the team to implement.
-Passing the current tests does not mean that the refactored package is complete.
+The repository contains the original course materials, working data, pinned dependencies,
+worksheet templates, and 9 deterministic characterisation tests of the monolith.
+Minh's `AssistantService` and CLI composition root are implemented with constructor-based dependency injection.
+The other members' configuration, models/errors, knowledge, tools/router, and responder/logging modules are pending.
+
+Service and CLI component tests use test-only contract substitutes for modules that are not available yet.
+Real modules take precedence when present. Passing these tests does not establish full-package integration.
 
 ## Setup
 
@@ -42,8 +45,8 @@ Ruff excludes the original teaching monolith; it checks the new package and test
 ```text
 lab03/                          Original monolith, data, and worksheet templates
 data/                           Working CSV and JSON data for the new package
-src/assistant_core/             Package skeleton; implementation pending
-tests/                          Characterisation tests of the monolith
+src/assistant_core/             Service and CLI; collaborator modules pending
+tests/                          Monolith characterisation and service/CLI component tests
 docs/architecture.md            Target modules, service interface, and design decisions
 docs/ai-use-log.md              Record of AI assistance
 docs/lab3/before_after.md        Individual maintainability worksheet
@@ -52,6 +55,30 @@ pyproject.toml                  Package, pytest, and Ruff configuration
 requirements.txt                Exact dependency versions
 .env.example                    Configuration template
 ```
+
+## Service and CLI
+
+`AssistantService(settings, offices, handbook, responder)` receives its collaborators through the constructor.
+Its public entry point is `handle(Message) -> Response`. Domain calculations and data access stay in their
+dedicated modules; the service chooses the flow, preserves sources, handles provider fallback, and logs metadata.
+The exact collaborator interfaces are listed in `docs/architecture.md`.
+
+The CLI help works before the remaining modules are implemented:
+
+```powershell
+.\.venv\Scripts\python.exe -m assistant_core --help
+```
+
+After the collaborator modules are integrated, run a question with:
+
+```powershell
+.\.venv\Scripts\python.exe -m assistant_core "tuition for 18 credits and 2 retake"
+.\.venv\Scripts\python.exe -m assistant_core --session-id demo "where is the library"
+```
+
+Answers go to stdout. The logging module configures JSON logs on stderr.
+The CLI returns 0 for an answer and 2 for invalid input or startup failure, without printing sensitive error values.
+Until all required modules exist, a question reports a clear startup error rather than a traceback.
 
 ## Lab deliverables
 

@@ -1,1 +1,1 @@
-"""Group 04's package skeleton; service implementation follows in member PRs."""
+"""Group 04 assistant package; collaborators are integrated through AssistantService."""

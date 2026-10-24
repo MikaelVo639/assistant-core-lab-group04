@@ -18,5 +18,17 @@
   removed planning/progress/verification documents, and moved the team assignment outside the repository.
 - No refactored service or homework feature was implemented during this cleanup.
 
+## 2026-10-24 - Minh's service and CLI contribution
+
+- Tool: OpenAI Codex.
+- Request: implement Minh's assigned service, CLI, architecture documentation, and tests using OOP.
+- Assistance: implemented `AssistantService` with constructor injection, routing orchestration,
+  configured tuition calls, source preservation, named provider fallback, and safe logging metadata.
+  Added the CLI composition root and documented the exact collaborator contracts.
+- Tests: original monolith characterisation plus service/CLI component tests. Missing collaborator modules
+  use test-only contract substitutes; actual modules take precedence once available.
+- Scope: other members' modules, full real-module integration, individual H1, and student manual review remain pending.
+- Student manual review: not recorded. Minh must read the code and confirm any material used in the submission.
+
 For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
 These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.
