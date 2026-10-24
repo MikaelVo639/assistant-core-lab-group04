@@ -18,5 +18,12 @@
   removed planning/progress/verification documents, and moved the team assignment outside the repository.
 - No refactored service or homework feature was implemented during this cleanup.
 
+## 2026-10-24 - Knowledge module refactoring (Đăng)
+
+- Tool: Antigravity IDE (Gemini 3.8 Flash).
+- Request: Refactor office directory and handbook lookup from monolith into `knowledge.py` with OOP classes `OfficeDirectory` and `Handbook`, robust data error handling, and comprehensive unit tests.
+- Assistance: Created `OfficeDirectory` and `Handbook` with factory methods `from_csv` and `from_json`, input validation for missing/corrupted files, and 20 unit tests covering happy paths and failure modes.
+- Student manual review: Adjusted API methods (`find`, `names`, `search`) to strictly conform to Lab 3 manual specifications, verified seamless integration with `router.py`, and ensured 100% clean Ruff checks and pytest pass.
+
 For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
 These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.
