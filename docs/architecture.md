@@ -1,7 +1,8 @@
 # Architecture of assistant_core
 
 Status: all ten core modules are implemented on Minh's personal refactor branch.
-The branch integrates Thinh's published models/errors/tools/router work and completes the remaining modules
+The branch integrates Thinh's models/errors/tools/router work and Dang's knowledge module from the merged main branch,
+and completes the remaining modules
 with AI assistance. Real-module integration tests cover the service, CLI, data, configuration, and logging.
 No missing-module substitutes are used.
 
@@ -81,6 +82,9 @@ API keys are excluded from representations and serialization. Invalid settings b
 `Office` and `Rule` are frozen dataclasses; directory/handbook objects own defensive copies of their records.
 CSV/JSON loaders reject missing files, malformed schemas, incomplete records, and duplicate identities with `DataError`.
 Search is a deterministic keyword-overlap baseline with input order breaking ties.
+Both rule lookup and the optional `RuleMatch` relevance score use the same punctuation-aware token normalization.
+The knowledge module also supports file/directory constructors, defensive record-list properties, and formatted
+office/fallback helpers; see `docs/knowledge_integration.md` for those compatible public interfaces.
 
 ## 5. Verification scope
 
@@ -88,6 +92,8 @@ Search is a deterministic keyword-overlap baseline with input order breaking tie
 office/rule misses, preserved sources, provider fallback, safe metadata, and unexpected-error propagation.
 `tests/test_cli.py` checks the actual CLI's composition, input/output, startup errors, and module entry point.
 `tests/component_fixtures.py` creates real collaborators with small deterministic records.
+`tests/test_knowledge.py` retains the merged knowledge tests; `tests/test_knowledge_validation.py` preserves
+the existing validation checks and merge-regression coverage.
 `tests/test_integration.py` verifies real course-data flows, a failing real stub, JSON stderr logs,
 cross-directory CLI execution, and missing-handbook startup failure.
 The original monolith tests remain unchanged. Existing teammate tests remain part of the complete suite.

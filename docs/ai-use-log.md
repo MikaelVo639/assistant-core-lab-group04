@@ -11,3 +11,10 @@
 - The before/after worksheet uses measured AST/Ruff results; human reading times are explicitly unmeasured.
 - Planning, assignments and contribution audits are stored outside this repository.
 - Code and technical review were AI-assisted. Student manual inspection and human PR approvals have not been claimed as completed.
+
+## 2026-10-24 - Update PR #1 from main
+
+- Integrated Dang's merged PR #3 and retained its public knowledge interfaces and original tests.
+- Kept the previous validation suite separately and added regressions for duplicate records, unreadable encoding,
+  consistent punctuation-aware search scores, constructor keyword compatibility and reordered CSV columns.
+- Retained the refactor-only scope and consolidated integration documentation without team task assignments.
