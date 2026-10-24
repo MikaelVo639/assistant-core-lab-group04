@@ -3,7 +3,7 @@
 Status: all ten core modules are implemented on Minh's personal refactor branch.
 The branch integrates Thinh's published models/errors/tools/router work and completes the remaining modules
 with AI assistance. Real-module integration tests cover the service, CLI, data, configuration, and logging.
-No missing-module substitutes are used. H1 extends the original design with the `help` intent.
+No missing-module substitutes are used.
 
 ## 1. Module responsibilities
 
@@ -29,7 +29,7 @@ AssistantService.handle(msg: Message) -> Response
 - `Message`: `text` has 1-2000 characters; `session_id` defaults to `local`.
 - `Response`: `answer`, `intent`, `sources: list[Source]`, and `degraded: bool`.
 - `Source`: `id` and `title`.
-- `Intent`: `greeting`, `help` (H1), `fee`, `office`, `rule`, and `unknown`.
+- `Intent`: `greeting`, `fee`, `office`, `rule`, and `unknown`.
 - Pydantic rejects invalid input at the boundary with `ValidationError`.
 - Missing or invalid configuration/data prevents startup with `ConfigError` or `DataError`.
 - A `ProviderError` triggers the template fallback, preserves sources, and sets `degraded=True`.
@@ -58,7 +58,7 @@ The following names and signatures are consumed by the implemented service and C
 | Module | Required public contract |
 | --- | --- |
 | `config` | `load_settings() -> Settings`; settings expose `data_dir: Path`, `llm_provider`, `log_level`, `credit_rate_vnd`, `retake_multiplier`, and `max_credits` |
-| `models` | Pydantic `Message`, `Response`, and `Source`; string enum `Intent` with `GREETING`, `HELP`, `FEE`, `OFFICE`, `RULE`, and `UNKNOWN` |
+| `models` | Pydantic `Message`, `Response`, and `Source`; string enum `Intent` with `GREETING`, `FEE`, `OFFICE`, `RULE`, and `UNKNOWN` |
 | `errors` | `ConfigError`, `DataError`, `InvalidRequest`, and `ProviderError`, derived from `AssistantError` |
 | `knowledge` | `OfficeDirectory.from_csv(path: Path)`, `.names: set[str]`, `.find(text) -> Office or None`; `Office` exposes `name`, `room`, `hours` |
 | `knowledge` | `Handbook.from_json(path: Path)`, `.search(query) -> Rule or None`; `Rule` exposes `id`, `title`, `text` |
@@ -82,10 +82,6 @@ API keys are excluded from representations and serialization. Invalid settings b
 CSV/JSON loaders reject missing files, malformed schemas, incomplete records, and duplicate identities with `DataError`.
 Search is a deterministic keyword-overlap baseline with input order breaking ties.
 
-The H1 help response uses current configuration for valid tuition examples and current office names for lookup examples.
-The router matches complete help requests and keeps IT Helpdesk, tuition, and handbook questions in their domain flows.
-Help does not query knowledge or call an AI provider. See `docs/lab3/ai_extension_review.md` for review provenance.
-
 ## 5. Verification scope
 
 `tests/test_service.py` checks the actual service against controlled collaborators, including configured fees,
@@ -94,5 +90,4 @@ office/rule misses, preserved sources, provider fallback, safe metadata, and une
 `tests/component_fixtures.py` creates real collaborators with small deterministic records.
 `tests/test_integration.py` verifies real course-data flows, a failing real stub, JSON stderr logs,
 cross-directory CLI execution, and missing-handbook startup failure.
-`tests/test_help.py` verifies H1 intent boundaries, configured examples, provider independence, and the real CLI.
 The original monolith tests remain unchanged. Existing teammate tests remain part of the complete suite.

@@ -8,8 +8,7 @@ Minh's personal branch contains the full refactored package, the original course
 pinned dependencies, a measured before/after worksheet, and real-module tests.
 It integrates the models/errors/tools/router work already merged from Thinh's contribution and completes
 configuration, knowledge loading, responders, logging, service, and CLI with AI assistance.
-H1 adds a deterministic capability-help question. AI-use and review provenance are recorded in the lab documents.
-Student manual review, assigned peer approvals, LMS submission, and team completion remain separate requirements.
+AI assistance is recorded in the project documentation. Code review and team integration remain separate steps.
 
 ## Setup
 
@@ -42,15 +41,13 @@ Ruff excludes the original teaching monolith; it checks the new package and test
 ## Repository layout
 
 ```text
-lab03/                          Original monolith, data, and worksheet templates
+lab03/                          Original monolith, data, and refactor worksheet
 data/                           Working CSV and JSON data for the new package
-src/assistant_core/             Complete refactored package and H1 help feature
+src/assistant_core/             Complete refactored package
 tests/                          Characterisation, unit, and real integration tests
 docs/architecture.md            Target modules, service interface, and design decisions
 docs/ai-use-log.md              Record of AI assistance
 docs/lab3/before_after.md        Individual maintainability worksheet
-docs/lab3/ai_extension_review.md H1 changes and AI-assisted review provenance
-docs/lab3/reflection.md          H3 technical reflection draft for Minh's review
 pyproject.toml                  Package, pytest, and Ruff configuration
 requirements.txt                Exact dependency versions
 .env.example                    Configuration template
@@ -69,18 +66,16 @@ Display command-line usage:
 .\.venv\Scripts\python.exe -m assistant_core --help
 ```
 
-Run a question or ask for the configured capabilities:
+Run a question:
 
 ```powershell
 .\.venv\Scripts\python.exe -m assistant_core "tuition for 18 credits and 2 retake"
 .\.venv\Scripts\python.exe -m assistant_core --session-id demo "where is the library"
-.\.venv\Scripts\python.exe -m assistant_core "help"
 ```
 
 Answers go to stdout. The logging module configures JSON logs on stderr.
 The CLI returns 0 for an answer and 2 for invalid input or startup failure, without printing sensitive error values.
 Missing or malformed knowledge files prevent startup with a safe error rather than a partial answer.
-For W3 bootcamp exercises and the study planner, use the companion `py/w3-mikaelvo639` branch/PR.
 
 ## Lab deliverables
 
@@ -98,17 +93,12 @@ with appropriate contributor credit. The final package must include:
 - At least 10 passing tests, including characterisation tests and tests of the refactored package.
 - Clean Ruff checks and formatting, pinned dependencies, and an architecture note with three decisions.
 
-For H1, each member adds an AI-assisted feature, manually improves at least three aspects of its code,
-documents the changes in `docs/lab3/ai_extension_review.md`, records AI use, and submits a merged PR link.
-For H2, complete W3-1 through W3-4 and the T-W3 team integration of `study_planner`.
-For H3, complete the assigned reading and reflection.
-
-The team submission (`v0.3-core`), H1, and H2 (`py-w3-done`) are due at 23:59 on the day before Lab 4.
+The team refactor submission (`v0.3-core`) is due at 23:59 on the day before Lab 4.
 Confirm the calendar date on LMS. Completion tags should only be created after the corresponding work is done.
 
 ## Course materials
 
-The five original files under `lab03/` are preserved unchanged from
+The original refactor script, its two data files, and the before/after worksheet under `lab03/` are preserved from
 [the course repository](https://github.com/CSC10014-at-fit-hcmus/public_materials/tree/f30c605c6ff376ac448ddb00fa82ae36347e29a9/lab03),
 commit `f30c605c6ff376ac448ddb00fa82ae36347e29a9`.
 The root `data/` files are working copies for the refactored package.

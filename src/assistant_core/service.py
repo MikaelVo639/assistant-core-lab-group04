@@ -47,8 +47,6 @@ class AssistantService:
 
     def _answer(self, text: str) -> Response:
         intent = route(text, self.offices.names)
-        if intent is Intent.HELP:
-            return self._help()
         if intent is Intent.GREETING:
             return Response(answer="Hello! I can help with offices, fees and rules.", intent=intent)
         if intent is Intent.FEE:
@@ -58,25 +56,6 @@ class AssistantService:
         if intent is Intent.RULE:
             return self._rule(text)
         return self._unknown()
-
-    def _help(self) -> Response:
-        """Describe real configured capabilities without searching or calling a provider."""
-        example_credits = min(12, self.settings.max_credits)
-        names = sorted(self.offices.names)
-        office_example = f"try 'where is {names[0]}'" if names else "no offices are loaded"
-        return Response(
-            answer=(
-                "I can help you with:\n"
-                f"- Office locations and opening hours: {office_example}.\n"
-                f"- Tuition estimates: try 'tuition for {example_credits} credits'; "
-                f"the rate is {self.settings.credit_rate_vnd:,} VND per credit "
-                f"and the normal-credit limit is {self.settings.max_credits}. Retakes are supported.\n"
-                "- Handbook rules: try 'exam absence' or 'thesis registration credits'.\n"
-                "- Greetings: say 'hello'.\n"
-                "Ask 'help' or 'what can you do?' to see this list again."
-            ),
-            intent=Intent.HELP,
-        )
 
     def _fee(self, text: str) -> Response:
         try:

@@ -10,7 +10,7 @@ Counts refer to `assistant_core`, not the preserved teaching snapshot or bootcam
 | What happens if `handbook.json` is missing? | Prints an error and continues with an empty handbook, then cannot find rules | Raises `DataError` at startup; CLI exits 2 without an answer |
 | Is any secret printed or logged? | The teaching placeholder key is printed by debug code | No key or full question is emitted by the refactored service/CLI; key is excluded from settings repr/serialization |
 | How long does it take a new teammate to find the fee logic? | Human timing not measured; fee logic is mixed into `handle()` | Human timing not measured; calculation is named `tools.tuition()` and called by `service._fee()` |
-| Number of global variables | 9 module bindings, including `BASE`; 3 mutable domain-data globals | 5 module bindings: 4 immutable routing constants and 1 logger; 0 mutable domain-data globals |
+| Number of global variables | 9 module bindings, including `BASE`; 3 mutable domain-data globals | 4 module bindings: 3 immutable routing constants and 1 logger; 0 mutable domain-data globals |
 | Number of bare `except:` blocks | 3 | 0 |
 | Lines in the longest function | 56, `handle()` | 26, `tools.tuition()` |
 | `ruff check` issues | 8 using isolated E/F/I/B/UP/BLE rules, Python 3.10 target and 120 columns | 0 for the configured source/test check; the unchanged teaching monolith is intentionally excluded |
