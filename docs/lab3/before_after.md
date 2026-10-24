@@ -1,7 +1,7 @@
 # Lab 3 — Before / after maintainability comparison
 
 AI-assisted technical comparison for Minh's full personal branch. Minh must review and confirm it before submission.
-Counts refer to `assistant_core`, not the preserved teaching snapshot or bootcamp code.
+Counts refer to the refactored `assistant_core` package.
 
 | Question | Before | After |
 |---|---|---|
