@@ -6,7 +6,7 @@ reviewed PR, merge and CI evidence required by tutorial sections 18.3 and 18.8.
 
 | Member | Week | Issue | PR | Reviewer | Tests | Hours |
 | --- | --- | --- | --- | --- | --- | --- |
-| Minh (`MikaelVo639`) | w3 | [Issue #4](https://github.com/MikaelVo639/assistant-core-lab-group04/issues/4) | Separate W3 PR pending publication | Assigned rotation reviewer pending | 35 local checks including the 3 official W3 tests; CI pending publication | Not recorded by student |
+| Minh (`MikaelVo639`) | w3 | [Issue #4](https://github.com/MikaelVo639/assistant-core-lab-group04/issues/4) | [PR #5](https://github.com/MikaelVo639/assistant-core-lab-group04/pull/5), based on Lab 03 PR #1 | Assigned rotation reviewer pending | 35 local checks including the 3 official W3 tests; published CI must be checked at the current head | Not recorded by student |
 | Thịnh (`thinh-nguyen-007`) | w3 | Pending | No W3 PR verified | Pending | No W3 results verified | Not recorded by student |
 
 Minh's W3-1..4 and T-W3 lead CLI have AI-assisted local implementations.

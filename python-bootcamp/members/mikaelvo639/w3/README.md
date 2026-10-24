@@ -25,8 +25,9 @@ Minh should review them and supply the requested authentic reflection in the PR.
 
 ## Evidence still to add
 
-- Linked homework issue; integrate bootcamp work into the existing
-  [draft PR #1](https://github.com/MikaelVo639/assistant-core-lab-group04/pull/1).
+- Homework [issue #4](https://github.com/MikaelVo639/assistant-core-lab-group04/issues/4) is linked to
+  [W3 PR #5](https://github.com/MikaelVo639/assistant-core-lab-group04/pull/5), stacked on
+  [Lab 03 PR #1](https://github.com/MikaelVo639/assistant-core-lab-group04/pull/1).
 - Assigned rotation reviewer and their review/approval.
 - Published instructor test and CI results (the three official W3 tests are included).
 - Minh's own code review and reflection.
