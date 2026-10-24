@@ -1,16 +1,15 @@
 # assistant-core-lab-group04
 
-Group 04 starter repository for CSC10014 Lab 03: Engineering a Maintainable Python Service.
+CSC10014 Lab 03: Engineering a Maintainable Python Service, Group 04.
 
 ## Current status
 
-The repository contains the original course materials, working data, pinned dependencies,
-worksheet templates, and 9 deterministic characterisation tests of the monolith.
-Minh's `AssistantService` and CLI composition root are implemented with constructor-based dependency injection.
-The other members' configuration, models/errors, knowledge, tools/router, and responder/logging modules are pending.
-
-Service and CLI component tests use test-only contract substitutes for modules that are not available yet.
-Real modules take precedence when present. Passing these tests does not establish full-package integration.
+Minh's personal branch contains the full refactored package, the original course materials, working data,
+pinned dependencies, a measured before/after worksheet, and real-module tests.
+It integrates the models/errors/tools/router work already merged from Thinh's contribution and completes
+configuration, knowledge loading, responders, logging, service, and CLI with AI assistance.
+H1 adds a deterministic capability-help question. AI-use and review provenance are recorded in the lab documents.
+Student manual review, assigned peer approvals, LMS submission, and team completion remain separate requirements.
 
 ## Setup
 
@@ -23,7 +22,7 @@ python -m venv .venv
 ```
 
 The environment does not need to be activated when its Python executable is called directly.
-`.env.example` documents the settings for the configuration module to be implemented.
+`.env.example` documents the configuration settings.
 The original monolith does not read these environment variables.
 Keep `.env` and real API keys out of Git.
 
@@ -45,12 +44,13 @@ Ruff excludes the original teaching monolith; it checks the new package and test
 ```text
 lab03/                          Original monolith, data, and worksheet templates
 data/                           Working CSV and JSON data for the new package
-src/assistant_core/             Service and CLI; collaborator modules pending
-tests/                          Monolith characterisation and service/CLI component tests
+src/assistant_core/             Complete refactored package and H1 help feature
+tests/                          Characterisation, unit, and real integration tests
 docs/architecture.md            Target modules, service interface, and design decisions
 docs/ai-use-log.md              Record of AI assistance
 docs/lab3/before_after.md        Individual maintainability worksheet
-docs/lab3/ai_extension_review.md Individual AI-extension review template
+docs/lab3/ai_extension_review.md H1 changes and AI-assisted review provenance
+docs/lab3/reflection.md          H3 technical reflection draft for Minh's review
 pyproject.toml                  Package, pytest, and Ruff configuration
 requirements.txt                Exact dependency versions
 .env.example                    Configuration template
@@ -63,22 +63,24 @@ Its public entry point is `handle(Message) -> Response`. Domain calculations and
 dedicated modules; the service chooses the flow, preserves sources, handles provider fallback, and logs metadata.
 The exact collaborator interfaces are listed in `docs/architecture.md`.
 
-The CLI help works before the remaining modules are implemented:
+Display command-line usage:
 
 ```powershell
 .\.venv\Scripts\python.exe -m assistant_core --help
 ```
 
-After the collaborator modules are integrated, run a question with:
+Run a question or ask for the configured capabilities:
 
 ```powershell
 .\.venv\Scripts\python.exe -m assistant_core "tuition for 18 credits and 2 retake"
 .\.venv\Scripts\python.exe -m assistant_core --session-id demo "where is the library"
+.\.venv\Scripts\python.exe -m assistant_core "help"
 ```
 
 Answers go to stdout. The logging module configures JSON logs on stderr.
 The CLI returns 0 for an answer and 2 for invalid input or startup failure, without printing sensitive error values.
-Until all required modules exist, a question reports a clear startup error rather than a traceback.
+Missing or malformed knowledge files prevent startup with a safe error rather than a partial answer.
+For W3 bootcamp exercises and the study planner, use the companion `py/w3-mikaelvo639` branch/PR.
 
 ## Lab deliverables
 

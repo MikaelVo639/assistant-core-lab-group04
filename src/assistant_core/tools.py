@@ -1,37 +1,27 @@
 import re
+from math import isfinite
 
 from assistant_core.errors import InvalidRequest
 
 
 def parse_credits(text: str) -> tuple[int, int]:
+    """Extract positive normal credits and separate non-negative integer retakes."""
+    if re.search(r"(?<!\w)[-\u2212]\s*\d|\d*[.,]\d", text):
+        raise InvalidRequest("Credits must be non-negative whole numbers.")
     cleaned = re.sub(r"[?,.:;!]", " ", text.lower())
-    words = cleaned.split()
-
-    credits = 0
-    retake = 0
-
-    retake_match = re.search(r"(\d+)\s*(?:retake|học lại|hoc lai)", cleaned)
-    if retake_match:
-        retake = int(retake_match.group(1))
-
-    credit_match = re.search(r"(\d+)\s*(?:credit|tín chỉ|tin chi|tc)", cleaned)
-    if credit_match:
+    retake_match = re.search(r"(\d+)\s*(?:retakes?|học lại|hoc lai)\b", cleaned)
+    credit_match = re.search(r"(\d+)\s*(?:credits?|tín chỉ|tin chi|tc)\b", cleaned)
+    retake = int(retake_match.group(1)) if retake_match else 0
+    if credit_match is not None:
         credits = int(credit_match.group(1))
-
-    if credits == 0 and retake == 0:
-        for i, word in enumerate(words):
-            if word.isdigit():
-                if i + 1 < len(words) and words[i + 1].startswith("retake"):
-                    retake = int(word)
-                elif credits == 0:
-                    credits = int(word)
-
-    if credits == 0 and retake > 0:
-        credits = retake
-
+    else:
+        normal_text = (
+            cleaned if retake_match is None else cleaned[: retake_match.start()] + cleaned[retake_match.end() :]
+        )
+        number = re.search(r"\b\d+\b", normal_text)
+        credits = int(number.group()) if number else 0
     if credits <= 0:
         raise InvalidRequest("How many credits?")
-
     return credits, retake
 
 
@@ -42,6 +32,7 @@ def tuition(
     retake_multiplier: float = 1.5,
     max_credits: int = 30,
 ) -> int:
+    """Calculate the exact integer VND total without I/O or provider calls."""
     if credits <= 0:
         raise InvalidRequest("How many credits?")
     if credits > max_credits:
@@ -53,5 +44,10 @@ def tuition(
     if retake_multiplier < 0:
         raise InvalidRequest("retake multiplier must be non-negative")
 
-    total = credits * rate + retake * rate * retake_multiplier
-    return int(round(total))
+    try:
+        total = credits * rate + retake * rate * retake_multiplier
+        if not isfinite(total):
+            raise InvalidRequest("Tuition values are outside the supported numeric range.")
+        return int(round(total))
+    except (OverflowError, ValueError):
+        raise InvalidRequest("Tuition values are outside the supported numeric range.") from None

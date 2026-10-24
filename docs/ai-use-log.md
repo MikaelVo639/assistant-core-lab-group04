@@ -1,5 +1,7 @@
 # AI use log
 
+Entries describe the state when the assistance occurred; the latest entry supersedes earlier pending implementation notes.
+
 ## 2026-10-24 - Repository preparation
 
 - Tool: OpenAI Codex.
@@ -30,5 +32,18 @@
 - Scope: other members' modules, full real-module integration, individual H1, and student manual review remain pending.
 - Student manual review: not recorded. Minh must read the code and confirm any material used in the submission.
 
-For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
-These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.
+## 2026-10-24 - Minh's remaining individual work
+
+- Tool: OpenAI Codex, with focused AI subtasks for bootcamp code, official-source reading, and read-only contribution audit.
+- User request: finish Minh's remaining work, then check published teammate completion.
+- Integrated Thinh's merged models/errors/tools/router/CI history without claiming that contribution as Minh's original work.
+- Added actual configuration, knowledge loaders, deterministic responders and JSON logging; removed missing-module test substitutes.
+- Added real data/CLI/fallback integration checks and regression tests for negative/fractional credits and greeting-prefix routing.
+- H1 feature-generation prompt: "Extend the assistant service with a help question that lists what the bot can do."
+  The actual first-pass AI proposal was reviewed and refined: configured credit examples, available-office examples,
+  and extracted exact help matching with domain-collision and real CLI tests. Details are in `docs/lab3/ai_extension_review.md`.
+- Filled the before/after worksheet using AST counts, isolated Ruff checks, and observed behavior; unmeasured human timings are labelled.
+- Prepared the H3 technical reflection from five official readings, with a student-review marker.
+- W3 bootcamp uses new AI-assisted prerequisite code because no historic W2 implementation was present; it does not establish past W2 activity.
+- All implementation and verification work in this entry was AI-assisted. Minh's manual review, personal reading/reflection,
+  actual hours, assigned human reviews, merges and submission have not been claimed or recorded as completed.

@@ -8,29 +8,28 @@ import pytest
 
 
 def test_component_fixture_restores_package_import_state():
-    """A later import must not reuse a service bound to removed fake models."""
-    from conftest import core_contracts as contracts_fixture
+    """A later import must not reuse a service modified for an earlier test."""
+    from component_fixtures import collaborator_scope
 
     package = importlib.import_module("assistant_core")
     missing = object()
     names = ("service", "__main__")
     old_attributes = {name: package.__dict__.get(name, missing) for name in names}
     old_modules = {name: sys.modules.get(f"assistant_core.{name}", missing) for name in names}
-    with pytest.MonkeyPatch.context() as patch:
-        fixture = contracts_fixture.__wrapped__(patch)
-        next(fixture)
+    with collaborator_scope():
         for name in names:
             importlib.import_module(f"assistant_core.{name}")
-        with pytest.raises(StopIteration):
-            next(fixture)
     for name in names:
         assert package.__dict__.get(name, missing) is old_attributes[name]
         assert sys.modules.get(f"assistant_core.{name}", missing) is old_modules[name]
 
 
 @pytest.fixture
-def service_module(core_contracts):
-    return importlib.import_module("assistant_core.service")
+def service_module(core_contracts, monkeypatch):
+    module = importlib.import_module("assistant_core.service")
+    # Select the flow under test explicitly; real router behavior is checked separately.
+    monkeypatch.setattr(module, "route", lambda text, names: core_contracts.models.Intent.RULE)
+    return module
 
 
 @pytest.fixture
@@ -145,7 +144,9 @@ def test_provider_failure_uses_template_and_keeps_source(service, core_contracts
 
     monkeypatch.setattr(service.responder, "explain", fail)
     with caplog.at_level(logging.INFO, logger="assistant_core"):
-        result = service.handle(c.models.Message(text="private full user question", session_id="session-7"))
+        result = service.handle(
+            c.models.Message(text="thesis registration private full user question", session_id="session-7")
+        )
     assert result.answer.startswith("Thesis registration: Students may register")
     assert result.degraded
     assert [source.id for source in result.sources] == ["H26-5.3"]
@@ -171,7 +172,7 @@ def test_normal_response_logs_metadata_without_question_or_settings(service, cor
     c = core_contracts
     c.settings.llm_api_key = "private-config-key"
     with caplog.at_level(logging.INFO, logger="assistant_core"):
-        service.handle(c.models.Message(text="the entire private question", session_id="local"))
+        service.handle(c.models.Message(text="thesis registration the entire private question", session_id="local"))
     records = [record for record in caplog.records if record.getMessage() == "handled"]
     assert len(records) == 1 and records[0].degraded is False
     assert records[0].intent == "rule"

@@ -1,7 +1,8 @@
 """Load a fresh copy of the original script for each characterisation test."""
 
 import importlib.util
-import sys
+import logging
+import os
 from pathlib import Path
 from types import ModuleType
 
@@ -20,28 +21,41 @@ def monolith() -> ModuleType:
 
 
 @pytest.fixture
-def core_contracts(monkeypatch: pytest.MonkeyPatch):
-    """Supply only missing collaborators; do not mock the service or CLI under test."""
-    from component_contracts import install_contracts
+def core_contracts():
+    """Supply real collaborators and restore the component imports after each test."""
+    from component_fixtures import collaborator_scope
 
-    package = importlib.import_module("assistant_core")
-    missing = object()
-    names = ("service", "__main__")
-    old_attributes = {name: package.__dict__.get(name, missing) for name in names}
-    old_modules = {name: sys.modules.get(f"assistant_core.{name}", missing) for name in names}
-    for name in names:
-        package.__dict__.pop(name, None)
-        sys.modules.pop(f"assistant_core.{name}", None)
-    try:
-        yield install_contracts(monkeypatch)
-    finally:
-        # Restore both import paths, including package attributes that bypass sys.modules.
-        for name in names:
-            if old_attributes[name] is missing:
-                package.__dict__.pop(name, None)
-            else:
-                setattr(package, name, old_attributes[name])
-            if old_modules[name] is missing:
-                sys.modules.pop(f"assistant_core.{name}", None)
-            else:
-                sys.modules[f"assistant_core.{name}"] = old_modules[name]
+    with collaborator_scope() as collaborators:
+        yield collaborators
+
+
+@pytest.fixture(autouse=True)
+def preserve_application_logging():
+    """Do not retain handlers bound to pytest capture streams between tests."""
+    logger = logging.getLogger("assistant_core")
+    handlers, level, propagate = logger.handlers[:], logger.level, logger.propagate
+    yield
+    for handler in logger.handlers[:]:
+        if handler not in handlers:
+            logger.removeHandler(handler)
+            handler.close()
+    logger.handlers = handlers
+    logger.setLevel(level)
+    logger.propagate = propagate
+
+
+@pytest.fixture
+def cli_environment():
+    """Make process-level assertions independent of shell configuration and local dotenv files."""
+    root = Path(__file__).resolve().parents[1]
+    return dict(
+        os.environ,
+        PYTHONPATH=str(root / "src"),
+        ASSISTANT_DATA_DIR=str(root / "data"),
+        LLM_PROVIDER="stub",
+        LLM_API_KEY="",
+        CREDIT_RATE_VND="450000",
+        RETAKE_MULTIPLIER="1.5",
+        MAX_CREDITS="30",
+        LOG_LEVEL="INFO",
+    )
