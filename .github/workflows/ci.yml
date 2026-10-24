@@ -39,4 +39,21 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v
+          pytest -v tests python-bootcamp/tests --member mikaelvo639
+
+  bootcamp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install bootcamp checks
+        run: pip install pytest==8.3.3 ruff==0.6.9
+      - name: Check bootcamp source and instructor W3 tests
+        run: |
+          ruff check python-bootcamp
+          ruff format --check python-bootcamp
+          pytest -q python-bootcamp/tests --member mikaelvo639
