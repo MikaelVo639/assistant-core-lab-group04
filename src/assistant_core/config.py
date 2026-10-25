@@ -89,7 +89,8 @@ class EnvSource(MappingSource):
             except (OSError, UnicodeError) as e:
                 raise ConfigError(f"Could not read configuration file: {env_file}") from e
         process_env = os.environ if environ is None else environ
-        super().__init__({**file_values, **process_env})
+        nonblank_process = {name: value for name, value in process_env.items() if value.strip()}
+        super().__init__({**file_values, **nonblank_process})
 
 
 class SettingsLoader:

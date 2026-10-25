@@ -57,6 +57,17 @@ def test_process_environment_overrides_dotenv(tmp_path: Path) -> None:
     assert settings.credit_rate_vnd == 600_000
 
 
+@pytest.mark.parametrize("value", ["", "  "])
+def test_blank_process_value_preserves_nonblank_dotenv_value(tmp_path: Path, value: str) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("MAX_CREDITS=12\nCREDIT_RATE_VND=1000\n", encoding="utf-8")
+
+    settings = load_settings(env_file=env_file, environ={"MAX_CREDITS": value, "CREDIT_RATE_VND": value})
+
+    assert settings.max_credits == 12
+    assert settings.credit_rate_vnd == 1000
+
+
 def test_empty_values_fall_back_to_defaults(tmp_path: Path) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text("MAX_CREDITS=\nLLM_API_KEY=\n", encoding="utf-8")
