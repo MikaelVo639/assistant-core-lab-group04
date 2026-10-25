@@ -3,7 +3,7 @@ from collections.abc import Collection
 
 from assistant_core.models import Intent
 
-GREETINGS = {"hi", "hello", "hey", "xin chao", "chao"}
+GREETINGS = frozenset({"hi", "hello", "hey", "xin chao", "chao"})
 GREETING_PREFIXES = ("hi ", "hello ", "hey ", "xin chao ", "chao ")
 
 RULE_KEYWORDS = (
@@ -29,12 +29,13 @@ RULE_KEYWORDS = (
 
 
 def route(text: str, office_names: Collection[str] = ()) -> Intent:
+    """Prioritise concrete requests over a conversational greeting prefix."""
     m = text.lower().strip()
     if not m:
         return Intent.UNKNOWN
 
     cleaned = re.sub(r"[?!.,;:]", "", m)
-    if cleaned in GREETINGS or m.startswith(GREETING_PREFIXES):
+    if cleaned in GREETINGS:
         return Intent.GREETING
 
     if "fee" in m or "tuition" in m or "học phí" in m or "hoc phi" in m:
@@ -47,4 +48,6 @@ def route(text: str, office_names: Collection[str] = ()) -> Intent:
     if any(keyword in m for keyword in RULE_KEYWORDS):
         return Intent.RULE
 
+    if m.startswith(GREETING_PREFIXES):
+        return Intent.GREETING
     return Intent.UNKNOWN

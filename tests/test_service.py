@@ -56,7 +56,7 @@ def test_greeting(service: AssistantService, text: str) -> None:
 def test_tuition_with_retake(service: AssistantService) -> None:
     response = service.handle(Message(text="tuition for 18 credits and 2 retake"))
 
-    assert response.answer == "Your tuition is 9450000 VND"
+    assert response.answer == "Your tuition is 9,450,000 VND."
     assert response.intent is Intent.FEE
 
 
@@ -71,7 +71,7 @@ def test_tuition_uses_injected_settings(settings: Settings) -> None:
 
     response = service.handle(Message(text="tuition for 10 credits and 2 retake"))
 
-    assert response.answer == "Your tuition is 7000000 VND"
+    assert response.answer == "Your tuition is 7,000,000 VND."
 
 
 def test_too_many_credits(service: AssistantService) -> None:
@@ -88,10 +88,22 @@ def test_missing_credit_count(service: AssistantService) -> None:
     assert response.intent is Intent.FEE
 
 
+@pytest.mark.parametrize(
+    "text",
+    ["tuition 1/2 credits", "tuition 18 credits and 1/2 retakes", "tuition 18 credits and 1 / 2 retakes"],
+)
+def test_fractional_credit_requests_do_not_quote_tuition(service: AssistantService, text: str) -> None:
+    response = service.handle(Message(text=text))
+
+    assert response.intent is Intent.FEE
+    assert "whole numbers" in response.answer
+    assert "VND" not in response.answer
+
+
 def test_office_lookup(service: AssistantService) -> None:
     response = service.handle(Message(text="where is the library"))
 
-    assert response.answer == "Library: room B.201, open Mon-Sat 07:00-20:00"
+    assert response.answer == "Library: room B.201, open Mon-Sat 07:00-20:00."
     assert response.intent is Intent.OFFICE
 
 
@@ -107,7 +119,7 @@ def test_rule_answer_has_source(service: AssistantService) -> None:
 def test_provider_failure_uses_template_and_keeps_source(failing_service: AssistantService) -> None:
     response = failing_service.handle(Message(text="can I register my thesis with 118 credits"))
 
-    assert response.answer == f"{THESIS_TEXT} (source: H26-5.3)"
+    assert response.answer == f"Thesis registration: {THESIS_TEXT} (source: H26-5.3)"
     assert response.intent is Intent.RULE
     assert response.degraded is True
     assert [source.id for source in response.sources] == ["H26-5.3"]
@@ -116,7 +128,7 @@ def test_provider_failure_uses_template_and_keeps_source(failing_service: Assist
 def test_unknown_question(service: AssistantService) -> None:
     response = service.handle(Message(text="weather tomorrow"))
 
-    assert response.answer == "Sorry I dont know"
+    assert response.answer == "Sorry, I don't know that yet."
     assert response.intent is Intent.UNKNOWN
     assert response.sources == []
 
@@ -126,4 +138,4 @@ def test_build_service_loads_packaged_data(settings: Settings) -> None:
 
     response = service.handle(Message(text="where is the library"))
 
-    assert response.answer == "Library: room B.201, open Mon-Sat 07:00-20:00"
+    assert response.answer == "Library: room B.201, open Mon-Sat 07:00-20:00."

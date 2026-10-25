@@ -1,61 +1,77 @@
-"""Command-line entry point for the refactored assistant."""
+"""Compose assistant objects and expose their service through a small CLI."""
 
 from __future__ import annotations
 
+import argparse
 import sys
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import ValidationError
 
-from assistant_core.config import load_settings
-from assistant_core.errors import AssistantError
-from assistant_core.logging_setup import setup_logging
-from assistant_core.models import Message
-from assistant_core.service import AssistantService, build_service
-
-USAGE = "usage: python -m assistant_core [question]"
+if TYPE_CHECKING:
+    from assistant_core.service import AssistantService
 
 
-def _ask(service: AssistantService, text: str) -> None:
-    """Validate one message, print its answer, and keep errors on stderr."""
+class _ArgumentParser(argparse.ArgumentParser):
+    """Explain invalid usage without echoing potentially sensitive argument values."""
+
+    def error(self, message: str) -> NoReturn:
+        self.print_usage(sys.stderr)
+        self.exit(2, "Invalid command-line arguments. Use --help for usage.\n")
+
+
+def build_service() -> AssistantService:
+    """Construct the object graph using the public contracts of the lab modules."""
+    from assistant_core.config import load_settings
+    from assistant_core.logging_setup import setup_logging
+    from assistant_core.service import build_service as compose_service
+
+    settings = load_settings()
+    setup_logging(settings.log_level)
+    return compose_service(settings)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = _ArgumentParser(description="Ask about offices, tuition fees, and handbook rules.")
+    parser.add_argument("--session-id", default="local", help="Session identifier for request metadata")
+    parser.add_argument("text", nargs="+", help="Question to send to the assistant")
+    args = parser.parse_args(argv)
     try:
-        message = Message(text=text)
-    except ValidationError:
-        print("Invalid message: must be 1-2000 characters.", file=sys.stderr)
-        return
-    print(service.handle(message).answer)
+        from assistant_core.errors import ConfigError, DataError
+        from assistant_core.models import Message
 
-
-def main(argv: list[str] | None = None) -> int:
-    """Run one question from argv or an interactive prompt."""
-    args = sys.argv[1:] if argv is None else argv
-
-    if args and args[0] in {"-h", "--help"}:
-        print(USAGE)
-        return 0
-
-    try:
-        settings = load_settings()
-        setup_logging(settings.log_level)
-        service = build_service(settings)
-    except AssistantError as exc:
-        print(f"startup failed: {exc}", file=sys.stderr)
+        message = Message(text=" ".join(args.text), session_id=args.session_id)
+        service = build_service()
+    except ModuleNotFoundError as exc:
+        return _missing_component(exc)
+    except (ConfigError, DataError):
+        print("Cannot start assistant. Check the environment and knowledge files.", file=sys.stderr)
         return 2
-
-    if args:
-        _ask(service, " ".join(args))
-        return 0
-
-    print("assistant ready")
-    while True:
-        try:
-            question = input("> ")
-        except (EOFError, KeyboardInterrupt):
-            print()
-            break
-        if question.strip().lower() == "quit":
-            break
-        _ask(service, question)
+    except ValidationError:
+        print("Invalid message or configuration. Check the input and environment values.", file=sys.stderr)
+        return 2
+    response = service.handle(message)
+    print(response.answer)
     return 0
+
+
+def _missing_component(exc: ModuleNotFoundError) -> int:
+    components = {
+        "config",
+        "errors",
+        "models",
+        "knowledge",
+        "logging_setup",
+        "responder",
+        "router",
+        "tools",
+        "service",
+    }
+    if exc.name not in {f"assistant_core.{name}" for name in components}:
+        raise exc
+    print("Cannot start assistant. Complete the remaining Lab 03 package modules.", file=sys.stderr)
+    return 2
 
 
 if __name__ == "__main__":

@@ -8,11 +8,17 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from assistant_core.errors import DataError
 from assistant_core.models import Source
+
+
+def _query_words(query: str) -> list[str]:
+    """Normalize keyword tokens consistently for lookup and relevance scores."""
+    return [word for word in re.findall(r"\w+", query.casefold()) if len(word) > 3]
 
 
 @dataclass(frozen=True)
@@ -31,13 +37,24 @@ class Office:
 class OfficeDirectory:
     """Manages office records and handles office location/hours lookup."""
 
-    def __init__(self, target: dict[str, Office] | Path | str) -> None:
+    def __init__(
+        self,
+        target: dict[str, Office] | Path | str | None = None,
+        *,
+        offices: dict[str, Office] | None = None,
+    ) -> None:
         """Initialize with an office dictionary or a path to CSV/data directory.
 
         Args:
             target: Either a dictionary mapping lowercase names to Office objects,
                     a Path/string to offices.csv, or a directory containing offices.csv.
         """
+        if offices is not None:
+            if target is not None:
+                raise TypeError("Pass only one office input.")
+            target = offices
+        if target is None:
+            raise TypeError("OfficeDirectory requires office data or a path.")
         if isinstance(target, dict):
             self._offices = dict(target)
             self._file_path: Path | None = None
@@ -82,21 +99,22 @@ class OfficeDirectory:
 
                 clean_header = [col.strip().lower() for col in header]
                 required_cols = ["name", "room", "hours"]
-                if clean_header[:3] != required_cols:
+                if not set(required_cols).issubset(clean_header):
                     raise DataError(f"Invalid CSV headers in {path}: expected {required_cols}, got {clean_header}")
+                column_indices = [clean_header.index(column) for column in required_cols]
 
                 for line_idx, row in enumerate(reader, start=2):
                     if not row or not any(field.strip() for field in row):
                         continue
-                    if len(row) < 3 or any(not row[i].strip() for i in range(3)):
+                    if any(i >= len(row) or not row[i].strip() for i in column_indices):
                         raise DataError(f"Malformed row at line {line_idx} in {path}: {row}")
 
-                    name = row[0].strip()
-                    room = row[1].strip()
-                    hours = row[2].strip()
+                    name, room, hours = (row[i].strip() for i in column_indices)
+                    if name.lower() in self._offices:
+                        raise DataError(f"Duplicate office name at line {line_idx} in {path}")
                     self._offices[name.lower()] = Office(name=name, room=room, hours=hours)
 
-        except OSError as exc:
+        except (OSError, UnicodeError, csv.Error) as exc:
             raise DataError(f"Failed to read office file {path}: {exc}") from exc
 
         if not self._offices:
@@ -169,8 +187,19 @@ class RuleMatch:
 class Handbook:
     """Manages student handbook rules and handles rule searching."""
 
-    def __init__(self, target: list[Rule] | Path | str) -> None:
+    def __init__(
+        self,
+        target: list[Rule] | Path | str | None = None,
+        *,
+        rules: list[Rule] | None = None,
+    ) -> None:
         """Initialize with a list of rules or a path to JSON/data directory."""
+        if rules is not None:
+            if target is not None:
+                raise TypeError("Pass only one handbook input.")
+            target = rules
+        if target is None:
+            raise TypeError("Handbook requires rules or a path.")
         if isinstance(target, list):
             self._rules = list(target)
             self._file_path: Path | None = None
@@ -205,7 +234,7 @@ class Handbook:
                 data = json.load(f)
         except json.JSONDecodeError as exc:
             raise DataError(f"Invalid JSON format in {path}: {exc}") from exc
-        except OSError as exc:
+        except (OSError, UnicodeError) as exc:
             raise DataError(f"Failed to read handbook file {path}: {exc}") from exc
 
         if not isinstance(data, list):
@@ -214,6 +243,7 @@ class Handbook:
         if not data:
             raise DataError(f"Handbook file is empty in {path}")
 
+        identifiers: set[str] = set()
         for idx, item in enumerate(data):
             if not isinstance(item, dict):
                 raise DataError(f"Invalid rule item at index {idx} in {path}: must be an object")
@@ -223,9 +253,13 @@ class Handbook:
                 if not isinstance(val, str) or not val.strip():
                     raise DataError(f"Missing or invalid field '{required_field}' at rule index {idx} in {path}")
 
+            identifier = item["id"].strip()
+            if identifier in identifiers:
+                raise DataError(f"Duplicate rule ID at index {idx} in {path}")
+            identifiers.add(identifier)
             self._rules.append(
                 Rule(
-                    id=item["id"].strip(),
+                    id=identifier,
                     title=item["title"].strip(),
                     text=item["text"].strip(),
                 )
@@ -237,8 +271,7 @@ class Handbook:
         Returns:
             The highest-scoring Rule if score >= 1, else None.
         """
-        normalized_query = query.lower()
-        query_words = [w for w in normalized_query.split() if len(w) > 3]
+        query_words = _query_words(query)
         if not query_words:
             return None
 
@@ -246,7 +279,7 @@ class Handbook:
         best_score = 0
 
         for rule in self._rules:
-            rule_text_lower = rule.text.lower()
+            rule_text_lower = rule.text.casefold()
             score = sum(1 for w in query_words if w in rule_text_lower)
             if score > best_score:
                 best_score = score
@@ -261,8 +294,8 @@ class Handbook:
         rule = self.search(query)
         if rule is None:
             return None
-        words = [w for w in query.lower().split() if len(w) > 3]
-        score = sum(1 for w in words if w in rule.text.lower())
+        words = _query_words(query)
+        score = sum(1 for w in words if w in rule.text.casefold())
         return RuleMatch(rule=rule, score=score)
 
     def search_formatted_fallback(self, query: str) -> str | None:

@@ -1,41 +1,37 @@
-"""Coordinate configuration, knowledge, tools, and responders for one request."""
+"""Coordinate assistant capabilities through a single object-oriented boundary."""
 
 from __future__ import annotations
 
 import logging
 from time import perf_counter
+from typing import TYPE_CHECKING
 
-from assistant_core.config import Settings, load_settings
 from assistant_core.errors import InvalidRequest, ProviderError
-from assistant_core.knowledge import Handbook, OfficeDirectory, Rule
-from assistant_core.models import Intent, Message, Response
-from assistant_core.responder import Responder, make_responder
+from assistant_core.models import Intent, Message, Response, Source
+from assistant_core.responder import TemplateResponder
 from assistant_core.router import route
 from assistant_core.tools import parse_credits, tuition
 
-log = logging.getLogger("assistant_core")
+if TYPE_CHECKING:
+    from assistant_core.config import Settings
+    from assistant_core.knowledge import Handbook, OfficeDirectory
+    from assistant_core.responder import Responder
 
-GREETING = "Hello! I can help with offices, fees and rules."
-UNKNOWN = "Sorry I dont know"
+log = logging.getLogger("assistant_core")
 
 
 class AssistantService:
-    """Orchestrate injected collaborators through one public entry point."""
+    """Orchestrate injected collaborators without owning their domain logic or I/O."""
 
-    def __init__(
-        self,
-        settings: Settings,
-        offices: OfficeDirectory,
-        handbook: Handbook,
-        responder: Responder,
-    ) -> None:
-        self._settings = settings
-        self._offices = offices
-        self._handbook = handbook
-        self._responder = responder
+    def __init__(self, settings: Settings, offices: OfficeDirectory, handbook: Handbook, responder: Responder):
+        self.settings = settings
+        self.offices = offices
+        self.handbook = handbook
+        self.responder = responder
+        self.fallback = TemplateResponder()
 
     def handle(self, msg: Message) -> Response:
-        """Answer a validated message and log safe request metadata."""
+        """Return an answer and safe metadata; provider outages use a template."""
         started = perf_counter()
         response = self._answer(msg.text)
         log.info(
@@ -50,9 +46,9 @@ class AssistantService:
         return response
 
     def _answer(self, text: str) -> Response:
-        intent = route(text, self._offices.names)
+        intent = route(text, self.offices.names)
         if intent is Intent.GREETING:
-            return Response(answer=GREETING, intent=intent)
+            return Response(answer="Hello! I can help with offices, fees and rules.", intent=intent)
         if intent is Intent.FEE:
             return self._fee(text)
         if intent is Intent.OFFICE:
@@ -67,48 +63,57 @@ class AssistantService:
             total = tuition(
                 credits,
                 retake,
-                rate=self._settings.credit_rate_vnd,
-                retake_multiplier=self._settings.retake_multiplier,
-                max_credits=self._settings.max_credits,
+                self.settings.credit_rate_vnd,
+                self.settings.retake_multiplier,
+                self.settings.max_credits,
             )
         except InvalidRequest as exc:
             return Response(answer=str(exc), intent=Intent.FEE)
-        return Response(answer=f"Your tuition is {total} VND", intent=Intent.FEE)
+        return Response(answer=f"Your tuition is {total:,} VND.", intent=Intent.FEE)
 
     def _office(self, text: str) -> Response:
-        office = self._offices.find(text)
+        office = self.offices.find(text)
         if office is None:
             return self._unknown()
-        return Response(answer=office.format_response(), intent=Intent.OFFICE)
+        return Response(
+            answer=f"{office.name}: room {office.room}, open {office.hours}.",
+            intent=Intent.OFFICE,
+        )
 
     def _rule(self, text: str) -> Response:
-        rule: Rule | None = self._handbook.search(text)
+        rule = self.handbook.search(text)
         if rule is None:
             return self._unknown()
-
         degraded = False
         try:
-            answer = f"{self._responder.explain(text, rule)} (source: {rule.id})"
+            answer = self.responder.explain(text, rule)
         except ProviderError:
             log.warning("provider failed; using template fallback")
-            answer = rule.format_fallback_response()
+            answer = self.fallback.explain(text, rule)
             degraded = True
-
+        answer = f"{answer} (source: {rule.id})"
         return Response(
             answer=answer,
             intent=Intent.RULE,
-            sources=[rule.source],
+            sources=[Source(id=rule.id, title=rule.title)],
             degraded=degraded,
         )
 
     @staticmethod
     def _unknown() -> Response:
-        return Response(answer=UNKNOWN, intent=Intent.UNKNOWN)
+        return Response(answer="Sorry, I don't know that yet.", intent=Intent.UNKNOWN)
 
 
 def build_service(settings: Settings | None = None) -> AssistantService:
-    """Compose a service from validated settings and the packaged data files."""
-    resolved = settings or load_settings()
-    offices = OfficeDirectory.from_csv(resolved.data_dir)
-    handbook = Handbook.from_json(resolved.data_dir)
-    return AssistantService(resolved, offices, handbook, make_responder(resolved))
+    """Compose validated collaborators without configuring the caller's logging."""
+    from assistant_core.config import load_settings
+    from assistant_core.knowledge import Handbook, OfficeDirectory
+    from assistant_core.responder import make_responder
+
+    resolved = settings if settings is not None else load_settings()
+    return AssistantService(
+        resolved,
+        OfficeDirectory.from_csv(resolved.data_dir / "offices.csv"),
+        Handbook.from_json(resolved.data_dir / "handbook.json"),
+        make_responder(resolved),
+    )
