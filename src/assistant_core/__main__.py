@@ -1,3 +1,7 @@
+"""Command-line entry point for the refactored assistant."""
+
+from __future__ import annotations
+
 import sys
 
 from pydantic import ValidationError
@@ -18,12 +22,35 @@ def _ask(service: AssistantService, text: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
+USAGE = "usage: python -m assistant_core [question]"
+
+
+def _ask(service: AssistantService, text: str) -> None:
+    """Validate one message, print its answer, and keep errors on stderr."""
+    try:
+        message = Message(text=text)
+    except ValidationError:
+        print("Invalid message: must be 1-2000 characters.", file=sys.stderr)
+        return
+    print(service.handle(message).answer)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run one question from argv or an interactive prompt."""
+    args = sys.argv[1:] if argv is None else argv
+
+    if args and args[0] in {"-h", "--help"}:
+        print(USAGE)
+        return 0
+
     try:
         settings = load_settings()
         setup_logging(settings.log_level)
         service = build_service(settings)
     except AssistantError as e:
         print(f"startup failed: {e}", file=sys.stderr)
+    except AssistantError as exc:
+        print(f"startup failed: {exc}", file=sys.stderr)
         return 2
 
     if args:
@@ -39,6 +66,13 @@ def main(argv: list[str] | None = None) -> int:
         if q.strip() == "quit":
             break
         _ask(service, q)
+            question = input("> ")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        if question.strip().lower() == "quit":
+            break
+        _ask(service, question)
     return 0
 
 
