@@ -91,6 +91,7 @@ class AssistantService:
             log.warning("provider failed; using template fallback")
             answer = self.fallback.explain(text, rule)
             degraded = True
+        answer = f"{answer} (source: {rule.id})"
         return Response(
             answer=answer,
             intent=Intent.RULE,
@@ -101,3 +102,18 @@ class AssistantService:
     @staticmethod
     def _unknown() -> Response:
         return Response(answer="Sorry, I don't know that yet.", intent=Intent.UNKNOWN)
+
+
+def build_service(settings: Settings | None = None) -> AssistantService:
+    """Compose validated collaborators without configuring the caller's logging."""
+    from assistant_core.config import load_settings
+    from assistant_core.knowledge import Handbook, OfficeDirectory
+    from assistant_core.responder import make_responder
+
+    resolved = settings if settings is not None else load_settings()
+    return AssistantService(
+        resolved,
+        OfficeDirectory.from_csv(resolved.data_dir / "offices.csv"),
+        Handbook.from_json(resolved.data_dir / "handbook.json"),
+        make_responder(resolved),
+    )

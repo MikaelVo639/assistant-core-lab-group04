@@ -1,11 +1,15 @@
 """Replaceable, offline response generators behind a small protocol."""
 
-from typing import Protocol
+from __future__ import annotations
 
-from assistant_core.errors import ProviderError
+from typing import Protocol, runtime_checkable
+
+from assistant_core.config import Settings
+from assistant_core.errors import ConfigError, ProviderError
 from assistant_core.knowledge import Rule
 
 
+@runtime_checkable
 class Responder(Protocol):
     """Boundary for a provider that explains an already retrieved rule."""
 
@@ -15,7 +19,7 @@ class Responder(Protocol):
 
 
 class TemplateResponder:
-    """Generate a factual answer without AI or network access."""
+    """Generate a factual answer without AI, network access, or an API key."""
 
     def explain(self, question: str, rule: Rule) -> str:
         """Return the handbook title and original rule text."""
@@ -25,11 +29,20 @@ class TemplateResponder:
 class StubLLMResponder:
     """Deterministic provider substitute with an explicit outage switch for tests."""
 
-    def __init__(self, fail: bool = False):
+    def __init__(self, fail: bool = False) -> None:
         self.fail = fail
 
     def explain(self, question: str, rule: Rule) -> str:
         """Return a stable answer or simulate a named provider failure."""
         if self.fail:
-            raise ProviderError("Stub provider unavailable")
+            raise ProviderError("stub provider unavailable")
         return f"Based on '{rule.title}': {rule.text}"
+
+
+def make_responder(settings: Settings) -> Responder:
+    """Select an offline responder from validated settings."""
+    if settings.llm_provider == "stub":
+        return StubLLMResponder()
+    if settings.llm_provider == "template":
+        return TemplateResponder()
+    raise ConfigError(f"Unsupported LLM provider: {settings.llm_provider}")

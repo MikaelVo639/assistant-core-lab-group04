@@ -84,3 +84,19 @@ def test_missing_handbook_fails_before_answering(tmp_path, cli_environment):
     )
     assert result.returncode == 2 and result.stdout == ""
     assert "Cannot start" in result.stderr and "Traceback" not in result.stderr
+
+
+def test_cli_selects_template_provider_and_displays_source(cli_environment):
+    result = subprocess.run(
+        [sys.executable, "-B", "-m", "assistant_core", "thesis?"],
+        env=dict(cli_environment, LLM_PROVIDER="template"),
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    assert result.returncode == 0
+    assert result.stdout.startswith("Thesis registration: Students may register")
+    assert "(source: H26-5.3)" in result.stdout
+    record = json.loads(result.stderr)
+    assert record["intent"] == "rule" and record["degraded"] is False

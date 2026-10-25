@@ -101,7 +101,7 @@ def test_configuration_validation_does_not_expose_values(cli, core_contracts, mo
 
 def test_build_service_uses_the_configured_data_directory(cli, core_contracts, monkeypatch, tmp_path):
     c = core_contracts
-    c.settings.data_dir = tmp_path
+    c.settings = c.settings.model_copy(update={"data_dir": tmp_path})
     monkeypatch.setattr(c.config, "load_settings", lambda: c.settings)
 
     def load_offices(path):
@@ -124,7 +124,7 @@ def test_build_service_uses_the_configured_data_directory(cli, core_contracts, m
 
 def test_build_service_rejects_a_provider_that_lab03_does_not_implement(cli, core_contracts, monkeypatch):
     c = core_contracts
-    c.settings.llm_provider = "unimplemented-provider"
+    c.settings = c.settings.model_copy(update={"llm_provider": "unimplemented-provider"})
     monkeypatch.setattr(c.config, "load_settings", lambda: c.settings)
     with pytest.raises(c.errors.ConfigError):
         cli.build_service()

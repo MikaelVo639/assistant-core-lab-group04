@@ -1,9 +1,9 @@
 # Architecture of assistant_core
 
-Status: all ten core modules are implemented on Minh's personal refactor branch.
-The branch integrates Thinh's models/errors/tools/router work and Dang's knowledge module from the merged main branch,
-and completes the remaining modules
-with AI assistance. Real-module integration tests cover the service, CLI, data, configuration, and logging.
+Status: all ten core modules are implemented in the integrated team package.
+The history retains Thinh's tools/router/CI, Dang's knowledge, Dat's configuration, Man's responders/logging,
+Thang's models/errors and Minh's service/CLI and regression fixes. Integration and technical review were AI-assisted.
+Real-module integration tests cover the service, CLI, data, configuration, and logging.
 No missing-module substitutes are used.
 
 ## 1. Module responsibilities
@@ -27,7 +27,7 @@ No missing-module substitutes are used.
 AssistantService.handle(msg: Message) -> Response
 ```
 
-- `Message`: `text` has 1-2000 characters; `session_id` defaults to `local`.
+- `Message`: `text` has 1-2000 characters, is trimmed and cannot be blank; `session_id` defaults to `local`.
 - `Response`: `answer`, `intent`, `sources: list[Source]`, and `degraded: bool`.
 - `Source`: `id` and `title`.
 - `Intent`: `greeting`, `fee`, `office`, `rule`, and `unknown`.
@@ -65,20 +65,26 @@ The following names and signatures are consumed by the implemented service and C
 | `knowledge` | `Handbook.from_json(path: Path)`, `.search(query) -> Rule or None`; `Rule` exposes `id`, `title`, `text` |
 | `router` | `route(text: str, office_names: set[str]) -> Intent` |
 | `tools` | `parse_credits(text: str) -> tuple[int, int]`; `tuition(credits, retake, rate, retake_multiplier, max_credits) -> int` |
-| `responder` | `Responder.explain(question: str, rule: Rule) -> str`; no-argument `TemplateResponder()` and `StubLLMResponder()` constructors |
+| `responder` | `Responder.explain(question: str, rule: Rule) -> str`; `TemplateResponder()`, `StubLLMResponder(fail=False)` and `make_responder(settings)` |
 | `logging_setup` | `setup_logging(level: str) -> None`, configuring JSON logs to stderr |
 
-The CLI's `build_service()` loads settings, configures logging, opens the two knowledge files under `data_dir`,
-constructs the stub responder, and injects these objects into `AssistantService`.
-Only `LLM_PROVIDER=stub` is supported in this lab; another provider raises `ConfigError`.
-`TemplateResponder` is the service's fallback and requires no network or key.
+The CLI's `build_service()` loads settings and configures logging, then calls the public
+`service.build_service(settings=None)` factory to load data and inject the selected responder.
+The public factory is also exported from `assistant_core` and does not configure application logging.
+`LLM_PROVIDER=stub` selects `StubLLMResponder`; `LLM_PROVIDER=template` selects `TemplateResponder`.
+Both work without a network or key. Unsupported providers raise `ConfigError`.
+`TemplateResponder` is also the service's fallback. Rule answers include a source ID for CLI callers and
+retain structured source metadata for other clients.
 
 `main(argv) -> int` constructs a validated `Message`, calls the service, and prints only the answer to stdout.
 It accepts question words and an optional `--session-id` (default `local`). Argument help (`--help`) is available
 before application startup. Known startup/validation errors return 2 with a safe stderr message.
 
-`Settings` validates environment variables over optional dotenv values without mutating the process environment.
-API keys are excluded from representations and serialization. Invalid settings become a safe `ConfigError`.
+Immutable `Settings` validates values from a `ConfigSource` through `SettingsLoader`.
+`MappingSource` supports explicit mappings; `EnvSource` overlays nonblank process variables on optional dotenv
+values without mutating the environment. Blank process variables preserve populated dotenv values; otherwise
+missing/blank fields use defaults. API keys are excluded from representations and serialization.
+Invalid settings become a safe `ConfigError` naming variables without echoing their values.
 `Office` and `Rule` are frozen dataclasses; directory/handbook objects own defensive copies of their records.
 CSV/JSON loaders reject missing files, malformed schemas, incomplete records, and duplicate identities with `DataError`.
 Search is a deterministic keyword-overlap baseline with input order breaking ties.
@@ -88,7 +94,8 @@ office/fallback helpers; see `docs/knowledge_integration.md` for those compatibl
 
 ## 5. Verification scope
 
-`tests/test_service.py` checks the actual service against controlled collaborators, including configured fees,
+`tests/test_service.py` checks full service flows against real data and injected configuration.
+`tests/test_service_regressions.py` checks controlled collaborators, including configured fees,
 office/rule misses, preserved sources, provider fallback, safe metadata, and unexpected-error propagation.
 `tests/test_cli.py` checks the actual CLI's composition, input/output, startup errors, and module entry point.
 `tests/component_fixtures.py` creates real collaborators with small deterministic records.
@@ -97,3 +104,5 @@ the existing validation checks and merge-regression coverage.
 `tests/test_integration.py` verifies real course-data flows, a failing real stub, JSON stderr logs,
 cross-directory CLI execution, and missing-handbook startup failure.
 The original monolith tests remain unchanged. Existing teammate tests remain part of the complete suite.
+Overlapping tests are retained in `test_config_regressions.py` and `test_responder_logging_regressions.py`.
+Expectations use the unified presentation: formatted VND totals, terminal punctuation and visible rule source IDs.

@@ -24,22 +24,12 @@ class _ArgumentParser(argparse.ArgumentParser):
 def build_service() -> AssistantService:
     """Construct the object graph using the public contracts of the lab modules."""
     from assistant_core.config import load_settings
-    from assistant_core.errors import ConfigError
-    from assistant_core.knowledge import Handbook, OfficeDirectory
     from assistant_core.logging_setup import setup_logging
-    from assistant_core.responder import StubLLMResponder
-    from assistant_core.service import AssistantService
+    from assistant_core.service import build_service as compose_service
 
     settings = load_settings()
-    if settings.llm_provider != "stub":
-        raise ConfigError("Only the stub LLM provider is available in Lab 03.")
     setup_logging(settings.log_level)
-    return AssistantService(
-        settings=settings,
-        offices=OfficeDirectory.from_csv(settings.data_dir / "offices.csv"),
-        handbook=Handbook.from_json(settings.data_dir / "handbook.json"),
-        responder=StubLLMResponder(),
-    )
+    return compose_service(settings)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

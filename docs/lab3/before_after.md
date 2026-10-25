@@ -1,6 +1,6 @@
 # Lab 3 — Before / after maintainability comparison
 
-AI-assisted technical comparison for Minh's full personal branch. Minh must review and confirm it before submission.
+AI-assisted technical comparison for the integrated team package. Each member must review their own submission.
 Counts refer to the refactored `assistant_core` package.
 
 | Question | Before | After |
@@ -10,7 +10,7 @@ Counts refer to the refactored `assistant_core` package.
 | What happens if `handbook.json` is missing? | Prints an error and continues with an empty handbook, then cannot find rules | Raises `DataError` at startup; CLI exits 2 without an answer |
 | Is any secret printed or logged? | The teaching placeholder key is printed by debug code | No key or full question is emitted by the refactored service/CLI; key is excluded from settings repr/serialization |
 | How long does it take a new teammate to find the fee logic? | Human timing not measured; fee logic is mixed into `handle()` | Human timing not measured; calculation is named `tools.tuition()` and called by `service._fee()` |
-| Number of global variables | 9 module bindings, including `BASE`; 3 mutable domain-data globals | 5 module bindings: 3 immutable routing constants, 1 logger and 1 compatibility class alias; 0 mutable domain-data globals |
+| Number of global variables | 9 module bindings, including `BASE`; 3 mutable domain-data globals | 13 module bindings: 6 constants, 3 type/class aliases, 3 export lists and 1 logger; 0 mutable domain-data globals |
 | Number of bare `except:` blocks | 3 | 0 |
 | Lines in the longest function | 56, `handle()` | 40, knowledge `_load_from_path()` |
 | `ruff check` issues | 8 using isolated E/F/I/B/UP/BLE rules, Python 3.10 target and 120 columns | 0 for the configured source/test check; the unchanged teaching monolith is intentionally excluded |

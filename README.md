@@ -4,11 +4,11 @@ CSC10014 Lab 03: Engineering a Maintainable Python Service, Group 04.
 
 ## Current status
 
-Minh's personal branch contains the full refactored package, the original course materials, working data,
-pinned dependencies, a measured before/after worksheet, and real-module tests.
-It integrates the models/errors/tools/router work already merged from Thinh's contribution and completes
-configuration, knowledge loading, responders, logging, service, and CLI with AI assistance.
-AI assistance is recorded in the project documentation. Code review and team integration remain separate steps.
+The repository contains the integrated OOP service, original refactor materials, working data, pinned
+dependencies, a measured before/after worksheet, and characterisation, unit and integration tests.
+It preserves contributions from Thinh (tools/router/CI), Dang (knowledge), Dat (configuration),
+Man (responders/logging), Thang (models/errors) and Minh (service/CLI and integration).
+AI assistance and technical review are recorded in `docs/ai-use-log.md`.
 
 ## Setup
 
@@ -77,9 +77,14 @@ Answers go to stdout. The logging module configures JSON logs on stderr.
 The CLI returns 0 for an answer and 2 for invalid input or startup failure, without printing sensitive error values.
 Missing or malformed knowledge files prevent startup with a safe error rather than a partial answer.
 
+`LLM_PROVIDER=stub` selects the deterministic provider; `LLM_PROVIDER=template` selects an offline template.
+Neither requires an API key. Unsupported providers fail validation. Configuration uses the first nonblank value
+from the process environment, `.env`, then documented defaults, without changing the process environment.
+Rule answers include a visible source ID as well as structured source metadata.
+
 ## Lab deliverables
 
-Each member completes the full refactor on a branch named `refactor/assistant-core-<name>`,
+Each member completes the refactor on a branch named `refactor/assistant-core-<name>`,
 runs tests after each step, fills in `docs/lab3/before_after.md`, and opens a PR.
 Submit the individual PR link on LMS at the end of the session; a draft PR is accepted.
 
@@ -93,7 +98,7 @@ with appropriate contributor credit. The final package must include:
 - At least 10 passing tests, including characterisation tests and tests of the refactored package.
 - Clean Ruff checks and formatting, pinned dependencies, and an architecture note with three decisions.
 
-The team refactor submission (`v0.3-core`) is due at 23:59 on the day before Lab 4.
+The team refactor submission uses the `v0.3-core` tag and is due at 23:59 on the day before Lab 4.
 Confirm the calendar date on LMS. Completion tags should only be created after the corresponding work is done.
 
 ## Course materials
