@@ -2,7 +2,8 @@
 
 from typing import Protocol
 
-from assistant_core.errors import ProviderError
+from assistant_core.config import Settings
+from assistant_core.errors import ConfigError, ProviderError
 from assistant_core.knowledge import Rule
 
 
@@ -33,3 +34,10 @@ class StubLLMResponder:
         if self.fail:
             raise ProviderError("stub provider unavailable")
         return f"Based on '{rule.title}': {rule.text}"
+
+
+def make_responder(settings: Settings) -> Responder:
+    """Build the configured provider; only the offline stub is supported."""
+    if settings.llm_provider == "stub":
+        return StubLLMResponder()
+    raise ConfigError(f"unsupported LLM_PROVIDER: {settings.llm_provider!r}")

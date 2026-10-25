@@ -4,7 +4,7 @@ from assistant_core.config import Settings, load_settings
 from assistant_core.errors import InvalidRequest, ProviderError
 from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.models import Intent, Message, Response
-from assistant_core.responder import Responder, TemplateResponder, make_responder
+from assistant_core.responder import Responder, make_responder
 from assistant_core.router import route
 from assistant_core.tools import parse_credits, tuition
 
@@ -20,7 +20,6 @@ class AssistantService:
         self._offices = offices
         self._handbook = handbook
         self._responder = responder
-        self._fallback = TemplateResponder()
 
     def handle(self, msg: Message) -> Response:
         intent = route(msg.text, self._offices.names)
@@ -50,10 +49,10 @@ class AssistantService:
         if rule is None:
             return Response(answer=UNKNOWN, intent=Intent.UNKNOWN)
         try:
-            answer, degraded = self._responder.respond(text, rule), False
+            answer, degraded = self._responder.explain(text, rule), False
         except ProviderError:
             log.warning("provider failed; using template fallback")
-            answer, degraded = self._fallback.respond(text, rule), True
+            answer, degraded = rule.format_fallback_response(), True
         return Response(answer=answer, intent=Intent.RULE, sources=[rule.source], degraded=degraded)
 
 

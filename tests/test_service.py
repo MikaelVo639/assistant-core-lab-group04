@@ -5,14 +5,14 @@ import pytest
 from assistant_core.config import Settings
 from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.models import Intent, Message
-from assistant_core.responder import StubProvider
+from assistant_core.responder import StubLLMResponder
 from assistant_core.service import AssistantService
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
 def make(fail: bool = False) -> AssistantService:
-    return AssistantService(Settings(), OfficeDirectory(DATA), Handbook(DATA), StubProvider(fail=fail))
+    return AssistantService(Settings(), OfficeDirectory(DATA), Handbook(DATA), StubLLMResponder(fail=fail))
 
 
 def ask(svc: AssistantService, text: str):
