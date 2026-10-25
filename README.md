@@ -6,7 +6,7 @@ Group 04 starter repository for CSC10014 Lab 03: Engineering a Maintainable Pyth
 
 The repository contains the original course materials, the package skeleton, working data,
 pinned dependencies, worksheet templates, and 9 deterministic characterisation tests of the monolith.
-The refactored modules and CLI are left for the team to implement.
+The refactored modules and CLI are implemented; run it with `python -m assistant_core "your question"`.
 Passing the current tests does not mean that the refactored package is complete.
 
 ## Setup

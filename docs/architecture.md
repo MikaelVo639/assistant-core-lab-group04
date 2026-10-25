@@ -1,8 +1,6 @@
 # Target architecture for assistant_core
 
-Status: target design from the Lab 03 tutorial. The modules below are implemented in the
-`tranquyetthang27` individual working copy; the team still has to select and integrate the final
-base version.
+Status: implemented. All modules in the table below exist under `src/assistant_core/`.
 
 ## 1. Module responsibilities
 

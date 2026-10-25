@@ -1,11 +1,18 @@
-"""Load and validate runtime settings from environment variables and ``.env``."""
+"""Configuration (Twelve-Factor III): settings come from the environment, never from code.
+
+Design:
+- ``Settings``       immutable value object; owns all validation (types, ranges, normalisation).
+- ``ConfigSource``   strategy for where raw values come from (process env, ``.env`` file, a dict in tests).
+- ``SettingsLoader`` factory that maps env var names to fields and turns validation failures into ``ConfigError``.
+- ``load_settings``  facade kept for callers that just want the default behaviour.
+"""
 
 from __future__ import annotations
 
 import os
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Protocol
 
 from dotenv import dotenv_values
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
@@ -15,17 +22,6 @@ from assistant_core.errors import ConfigError
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 ProviderName = Literal["stub", "template"]
 
-ENV_TO_FIELD = {
-    "ASSISTANT_DATA_DIR": "data_dir",
-    "LLM_PROVIDER": "llm_provider",
-    "LLM_API_KEY": "llm_api_key",
-    "CREDIT_RATE_VND": "credit_rate_vnd",
-    "RETAKE_MULTIPLIER": "retake_multiplier",
-    "MAX_CREDITS": "max_credits",
-    "LOG_LEVEL": "log_level",
-}
-FIELD_TO_ENV = {field: name for name, field in ENV_TO_FIELD.items()}
-
 
 class Settings(BaseModel):
     """Validated, immutable settings passed to the service at startup."""
@@ -34,7 +30,7 @@ class Settings(BaseModel):
 
     data_dir: Path = Path("data")
     llm_provider: ProviderName = "stub"
-    llm_api_key: str | None = Field(default=None, repr=False, exclude=True)
+    llm_api_key: str | None = Field(default=None, repr=False, exclude=True)  # never printed or dumped
     credit_rate_vnd: int = Field(default=450_000, gt=0)
     retake_multiplier: float = Field(default=1.5, ge=0, allow_inf_nan=False)
     max_credits: int = Field(default=30, ge=1)
@@ -65,62 +61,65 @@ class Settings(BaseModel):
         return value.strip().upper() if isinstance(value, str) else value
 
 
-def _read_dotenv(env_file: str | Path | None) -> Mapping[str, str | None]:
-    """Read a dotenv file without mutating ``os.environ``."""
-    if env_file is None:
-        return {}
-    try:
-        return dotenv_values(env_file)
-    except (OSError, UnicodeError) as exc:
-        raise ConfigError(f"Could not read configuration file: {env_file}") from exc
+class ConfigSource(Protocol):
+    def get(self, name: str) -> str | None: ...
 
 
-def _pick(
-    process_env: Mapping[str, str | None],
-    file_values: Mapping[str, str | None],
-    name: str,
-    default: str,
-) -> str:
-    """Return the first non-empty value: process env, dotenv, then default."""
-    for candidate in (process_env.get(name), file_values.get(name)):
-        if candidate is not None and candidate.strip():
-            return candidate
-    return default
+class MappingSource:
+    """Reads from any mapping; the base for the sources below and handy in tests."""
+
+    def __init__(self, values: Mapping[str, str | None]) -> None:
+        self._values = values
+
+    def get(self, name: str) -> str | None:
+        return self._values.get(name)
 
 
-def _build_payload(
-    process_env: Mapping[str, str | None],
-    file_values: Mapping[str, str | None],
-) -> dict[str, str]:
-    """Map the documented environment variables to settings fields."""
-    return {
-        "data_dir": _pick(process_env, file_values, "ASSISTANT_DATA_DIR", "data"),
-        "llm_provider": _pick(process_env, file_values, "LLM_PROVIDER", "stub"),
-        "llm_api_key": _pick(process_env, file_values, "LLM_API_KEY", ""),
-        "credit_rate_vnd": _pick(process_env, file_values, "CREDIT_RATE_VND", "450000"),
-        "retake_multiplier": _pick(process_env, file_values, "RETAKE_MULTIPLIER", "1.5"),
-        "max_credits": _pick(process_env, file_values, "MAX_CREDITS", "30"),
-        "log_level": _pick(process_env, file_values, "LOG_LEVEL", "INFO"),
+class EnvSource(MappingSource):
+    """Process environment, optionally layered over a ``.env`` file (real env vars win).
+
+    The file is parsed, not exported, so loading never mutates ``os.environ``.
+    """
+
+    def __init__(self, env_file: str | Path | None = ".env", environ: Mapping[str, str] | None = None) -> None:
+        file_values: Mapping[str, str | None] = {}
+        if env_file is not None:
+            try:
+                file_values = dotenv_values(env_file)
+            except (OSError, UnicodeError) as e:
+                raise ConfigError(f"Could not read configuration file: {env_file}") from e
+        process_env = os.environ if environ is None else environ
+        nonblank_process = {name: value for name, value in process_env.items() if value.strip()}
+        super().__init__({**file_values, **nonblank_process})
+
+
+class SettingsLoader:
+    ENV_VARS = {
+        "data_dir": "ASSISTANT_DATA_DIR",
+        "llm_provider": "LLM_PROVIDER",
+        "llm_api_key": "LLM_API_KEY",
+        "credit_rate_vnd": "CREDIT_RATE_VND",
+        "retake_multiplier": "RETAKE_MULTIPLIER",
+        "max_credits": "MAX_CREDITS",
+        "log_level": "LOG_LEVEL",
     }
 
+    def __init__(self, source: ConfigSource) -> None:
+        self._source = source
 
-def load_settings(
-    env_file: str | Path | None = ".env",
-    environ: Mapping[str, str] | None = None,
-) -> Settings:
-    """Build settings from process environment over an optional dotenv file.
+    def load(self) -> Settings:
+        raw = {field: self._source.get(var) for field, var in self.ENV_VARS.items()}
+        present = {field: value for field, value in raw.items() if value and value.strip()}  # blank == unset
+        try:
+            return Settings(**present)
+        except ValidationError as e:
+            # Report names and reasons only, and drop the cause: error inputs could contain the API key.
+            problems = "; ".join(
+                f"{self.ENV_VARS.get(str(err['loc'][0]), 'settings') if err['loc'] else 'settings'}: {err['msg']}"
+                for err in e.errors()
+            )
+            raise ConfigError(f"invalid configuration: {problems}") from None
 
-    Real environment variables take precedence over values in ``env_file``.
-    An empty value is treated as "not provided" so the documented default is
-    used.  Validation errors name the offending environment variable but never
-    echo its value, which keeps secrets out of startup logs.
-    """
-    process_env = os.environ if environ is None else environ
-    payload = _build_payload(process_env, _read_dotenv(env_file))
 
-    try:
-        return Settings(**payload)
-    except ValidationError as exc:
-        fields = sorted({str(error["loc"][0]) for error in exc.errors() if error["loc"]})
-        names = ", ".join(FIELD_TO_ENV.get(field, field) for field in fields) or "unknown"
-        raise ConfigError(f"Invalid configuration for: {names}") from None
+def load_settings(env_file: str | Path | None = ".env", environ: Mapping[str, str] | None = None) -> Settings:
+    return SettingsLoader(EnvSource(env_file, environ)).load()
