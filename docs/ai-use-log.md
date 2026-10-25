@@ -31,6 +31,8 @@
 - Preserved the existing suites in separate regression files. Updated test setup to construct new immutable
   settings and aligned presentation assertions with one response format; no failing behavior checks were removed.
 - Restored contribution provenance from merged PR history and consolidated English refactor documentation.
+- A fresh whole-branch AI review found slash fractions being interpreted as their denominator. Three real
+  service tests failed before extending the fractional guard, then passed with the complete suite.
 - Review and integration checks are AI-assisted. They do not establish student understanding or individual
   LMS submission; students must verify their own submissions and any pending manual-review statements.
 

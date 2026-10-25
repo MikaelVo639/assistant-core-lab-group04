@@ -6,7 +6,7 @@ from assistant_core.errors import InvalidRequest
 
 def parse_credits(text: str) -> tuple[int, int]:
     """Extract positive normal credits and separate non-negative integer retakes."""
-    if re.search(r"(?<!\w)[-\u2212]\s*\d|\d*[.,]\d", text):
+    if re.search(r"(?<!\w)[-\u2212]\s*\d|\d*[.,]\d|\d+\s*/\s*\d+", text):
         raise InvalidRequest("Credits must be non-negative whole numbers.")
     cleaned = re.sub(r"[?,.:;!]", " ", text.lower())
     retake_match = re.search(r"(\d+)\s*(?:retakes?|học lại|hoc lai)\b", cleaned)

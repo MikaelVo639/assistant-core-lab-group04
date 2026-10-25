@@ -88,6 +88,18 @@ def test_missing_credit_count(service: AssistantService) -> None:
     assert response.intent is Intent.FEE
 
 
+@pytest.mark.parametrize(
+    "text",
+    ["tuition 1/2 credits", "tuition 18 credits and 1/2 retakes", "tuition 18 credits and 1 / 2 retakes"],
+)
+def test_fractional_credit_requests_do_not_quote_tuition(service: AssistantService, text: str) -> None:
+    response = service.handle(Message(text=text))
+
+    assert response.intent is Intent.FEE
+    assert "whole numbers" in response.answer
+    assert "VND" not in response.answer
+
+
 def test_office_lookup(service: AssistantService) -> None:
     response = service.handle(Message(text="where is the library"))
 
