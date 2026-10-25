@@ -1,7 +1,8 @@
 # Target architecture for assistant_core
 
-Status: target design from the Lab 03 tutorial. Only the package skeleton exists so far.
-Update this document to match the implementation when the team completes the refactor.
+Status: target design from the Lab 03 tutorial. The modules below are implemented in the
+`tranquyetthang27` individual working copy; the team still has to select and integrate the final
+base version.
 
 ## 1. Module responsibilities
 

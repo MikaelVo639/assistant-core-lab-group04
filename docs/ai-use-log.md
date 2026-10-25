@@ -28,32 +28,18 @@
 For H1, add a separate entry with the actual prompt, feature, changed files, and manual review.
 These preparation entries do not satisfy the requirement to document three improvements to AI-generated code.
 
-## 2026-10-24 - Light-orange CLI responses (@LePhanDucMan-pa)
+## 2026-10-25 - Individual Lab 3 refactor (@tranquyetthang27)
 
-- Tool: OpenAI Codex.
-- Prompt: add a command-line feature that displays the human-facing service response in
-  light orange while leaving the automatically generated JSON log plain white.
-- Feature: isolated ANSI styling to answers written to stdout; structured logs on stderr
-  remain uncolored and machine-readable.
-- Improvements after review: added an explicit reset sequence, disabled color for redirected
-  output and `NO_COLOR`, added a `--no-color` option, and covered answer and log behavior with tests.
-- Changed files: `src/assistant_core/console.py`, `src/assistant_core/__main__.py`, CLI color tests,
-  logging tests, `README.md`, `docs/architecture.md`, and `docs/lab3/ai_extension_review.md`.
-- Verification performed by @LePhanDucMan-pa: exercised greeting, tuition, office, handbook,
-  unknown-question, and invalid-credit responses in PowerShell; automated suite reached 34 passing tests.
-- Manual code review: @LePhanDucMan-pa must confirm understanding of every changed line before submission.
-
-## 2026-10-25 - Responder and structured logging (@LePhanDucMan-pa)
-
-- Tool: OpenAI Codex.
-- Request: implement the assigned responder and logging modules after merging the latest `main`, following
-  the Lab 03 and Git/GitHub tutorials and the repository's existing public contracts.
-- Assistance: implemented the `Responder.explain()` protocol, deterministic template and stub responders,
-  simulated `ProviderError`, application-scoped JSON logging to stderr, and focused unit tests.
-- Privacy review: logs allow only intent, latency, session, and degraded metadata in addition to the standard
-  level, logger, and event message; tests verify that unapproved question and API-key metadata is omitted.
-- Integration review: retained the merged `knowledge.Rule` and `ProviderError` types, avoided edits to modules
-  owned by teammates, and used the interface expected by the service integration guide.
-- Verification: 75 tests passed; `ruff check .` and `ruff format --check .` both passed.
-- Student manual review: @LePhanDucMan-pa must inspect the implementation, explain the fallback and logging
-  behavior, and confirm all verification results before submission.
+- Tool: OpenCode (DeepSeek V4.1 Flash).
+- Prompt: complete the Lab 3 refactor in this working copy, preserve the monolith's business
+  logic, follow `docs/architecture.md`, and finish the `tranquyetthang27` scope.
+- Assistance: added environment-backed `config.py`, service orchestration, the CLI entry point,
+  the responder factory, request-boundary validation, a named exception hierarchy with stable
+  error codes, and offline tests for the models, errors, configuration, responder, and service.
+  `responder.py` and `logging_setup.py` follow the versions already merged on `origin/main` so the
+  interfaces remain compatible with the team's service integration.
+- Verification: 143 tests pass; `ruff check .` and `ruff format --check .` both pass. The CLI was
+  exercised for greeting, tuition, office, rule, unknown, `--help`, template provider, and invalid
+  configuration paths.
+- Student manual review: pending. @tranquyetthang27 must inspect every changed line, explain the
+  provider-fallback and configuration behavior, and confirm the verification results before submission.
