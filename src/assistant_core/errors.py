@@ -1,36 +1,49 @@
-"""Exception hierarchy for assistant_core.
+"""Named exception hierarchy for the assistant service boundary.
 
-Callers catch ``AssistantError`` to handle any domain failure, or a subclass to
-handle one category. Each subclass carries a stable machine-readable ``code``
-so logs and the CLI can report the category without parsing messages.
+All expected failures inherit from :class:`AssistantError`, so the CLI and the
+service can handle domain errors without catching broad ``Exception``.  Every
+subclass exposes a stable, machine-readable ``code`` that can be logged or
+shown to callers without parsing human-readable messages.
 """
+
+from __future__ import annotations
+
+from typing import ClassVar
+
+__all__ = [
+    "AssistantError",
+    "ConfigError",
+    "DataError",
+    "InvalidRequest",
+    "ProviderError",
+]
 
 
 class AssistantError(Exception):
-    """Base class for all assistant errors."""
+    """Base class for every expected assistant failure."""
 
-    code = "assistant_error"
+    code: ClassVar[str] = "assistant_error"
 
 
 class ConfigError(AssistantError):
-    """Configuration is missing or invalid."""
+    """Raised when configuration is missing, unreadable, or invalid."""
 
-    code = "config_error"
+    code: ClassVar[str] = "config_error"
 
 
 class DataError(AssistantError):
-    """A knowledge file is missing or malformed."""
+    """Raised when a knowledge file is missing or malformed."""
 
-    code = "data_error"
+    code: ClassVar[str] = "data_error"
 
 
 class InvalidRequest(AssistantError):
-    """The user's request cannot be processed as given."""
+    """Raised when a user request cannot be answered as given."""
 
-    code = "invalid_request"
+    code: ClassVar[str] = "invalid_request"
 
 
 class ProviderError(AssistantError):
-    """The AI provider failed (timeout, outage, bad response)."""
+    """Raised when an external response provider is unavailable."""
 
-    code = "provider_error"
+    code: ClassVar[str] = "provider_error"

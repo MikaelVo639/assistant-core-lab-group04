@@ -40,10 +40,6 @@ class StubLLMResponder:
 
 
 def make_responder(settings: Settings) -> Responder:
-    """Build the configured provider; only the offline stub is supported."""
-    if settings.llm_provider == "stub":
-        return StubLLMResponder()
-    raise ConfigError(f"unsupported LLM_PROVIDER: {settings.llm_provider!r}")
     """Select an offline responder from validated settings."""
     if settings.llm_provider == "stub":
         return StubLLMResponder()

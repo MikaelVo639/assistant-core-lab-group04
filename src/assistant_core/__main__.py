@@ -12,16 +12,6 @@ from assistant_core.logging_setup import setup_logging
 from assistant_core.models import Message
 from assistant_core.service import AssistantService, build_service
 
-
-def _ask(service: AssistantService, text: str) -> None:
-    try:
-        print(service.handle(Message(text=text)).answer)
-    except ValidationError:
-        print("Invalid message: must be 1-2000 characters.")
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
 USAGE = "usage: python -m assistant_core [question]"
 
 
@@ -47,8 +37,6 @@ def main(argv: list[str] | None = None) -> int:
         settings = load_settings()
         setup_logging(settings.log_level)
         service = build_service(settings)
-    except AssistantError as e:
-        print(f"startup failed: {e}", file=sys.stderr)
     except AssistantError as exc:
         print(f"startup failed: {exc}", file=sys.stderr)
         return 2
@@ -60,12 +48,6 @@ def main(argv: list[str] | None = None) -> int:
     print("assistant ready")
     while True:
         try:
-            q = input("> ")
-        except EOFError:
-            break
-        if q.strip() == "quit":
-            break
-        _ask(service, q)
             question = input("> ")
         except (EOFError, KeyboardInterrupt):
             print()
