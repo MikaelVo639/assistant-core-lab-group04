@@ -1,5 +1,15 @@
 # AI use log
 
+## 2026-10-31 - Lab 4 in-class assistance
+
+- Tool: OpenAI Codex. User requested P1–P5 and T1–T4, excluding homework.
+- Implemented the warm-up endpoints and four API tasks in the supplied standalone
+  starter. Removed unused bonus limiter initialization without implementing bonus.
+- Added separate Lab 4 CI, Windows setup instructions, curl output and a screenshot
+  of a successful Swagger chat request in `docs/lab4/`.
+- Verification: warm-up 5 passed; starter 23 passed, 1 bonus skipped; root Lab 3
+  239 passed; Ruff checks pass. Students must review and understand the code.
+
 ## 2026-10-24 - Refactor assistance
 
 - Tool: OpenAI Codex.
