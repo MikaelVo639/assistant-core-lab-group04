@@ -35,6 +35,12 @@ class Settings(BaseModel):
     retake_multiplier: float = Field(default=1.5, ge=0, allow_inf_nan=False)
     max_credits: int = Field(default=30, ge=1)
     log_level: LogLevel = "INFO"
+    api_admin_key: str | None = Field(default=None, repr=False, exclude=True)  # never printed or dumped
+    weather_url: str = "https://api.open-meteo.com/v1/forecast"
+    weather_timeout_s: float = Field(default=3.0, gt=0, allow_inf_nan=False)
+    campus_lat: float = Field(default=10.7626, ge=-90, le=90)
+    campus_lon: float = Field(default=106.6822, ge=-180, le=180)
+    rate_limit_per_min: int = Field(default=30, ge=1)
 
     @field_validator("data_dir", mode="before")
     @classmethod
@@ -48,7 +54,7 @@ class Settings(BaseModel):
     def _clean_provider(cls, value: object) -> object:
         return value.strip().lower() if isinstance(value, str) else value
 
-    @field_validator("llm_api_key", mode="before")
+    @field_validator("llm_api_key", "api_admin_key", mode="before")
     @classmethod
     def _clean_api_key(cls, value: object) -> object:
         if isinstance(value, str):
@@ -102,6 +108,12 @@ class SettingsLoader:
         "retake_multiplier": "RETAKE_MULTIPLIER",
         "max_credits": "MAX_CREDITS",
         "log_level": "LOG_LEVEL",
+        "api_admin_key": "API_ADMIN_KEY",
+        "weather_url": "WEATHER_URL",
+        "weather_timeout_s": "WEATHER_TIMEOUT_S",
+        "campus_lat": "CAMPUS_LAT",
+        "campus_lon": "CAMPUS_LON",
+        "rate_limit_per_min": "RATE_LIMIT_PER_MIN",
     }
 
     def __init__(self, source: ConfigSource) -> None:
@@ -113,7 +125,7 @@ class SettingsLoader:
         try:
             return Settings(**present)
         except ValidationError as e:
-            # Report names and reasons only, and drop the cause: error inputs could contain the API key.
+            # Report names and reasons only, and drop the cause: error inputs could contain the API keys.
             problems = "; ".join(
                 f"{self.ENV_VARS.get(str(err['loc'][0]), 'settings') if err['loc'] else 'settings'}: {err['msg']}"
                 for err in e.errors()

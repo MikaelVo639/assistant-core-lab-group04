@@ -41,12 +41,35 @@ The original demo includes a deliberately unreliable provider stub.
 The characterisation tests replace that provider when needed so they run deterministically and offline.
 Ruff excludes the original teaching monolith; it checks the new package and tests.
 
+## Run the HTTP API (Lab 04)
+
+```powershell
+$env:PYTHONPATH = "src"
+.\.venv\Scripts\python.exe -m uvicorn assistant_api.main:create_app --factory --reload
+```
+
+Open http://127.0.0.1:8000/docs for the OpenAPI documentation. `src/assistant_api/` wraps `AssistantService`
+over HTTP; its settings (`API_ADMIN_KEY`, `WEATHER_*`, `CAMPUS_*`, `RATE_LIMIT_PER_MIN`) live in `.env.example`.
+
+| Method | Path | Success | Errors |
+|---|---|---|---|
+| GET | `/health` | 200 `{"status":"ok","version":...}` | — |
+| POST | `/v1/chat` | 200 `{answer, intent, sources[], degraded, request_id}` | 422 invalid, 429 rate limit |
+| POST | `/v1/feedback` | 201 feedback with `id`, `created_at` | 422 |
+| GET | `/v1/feedback` (header `X-API-Key`) | 200 list | 401 |
+| GET | `/v1/weather` | 200 `{temperature_c, wind_kmh, description, observed_at, stale}` | 503 upstream down |
+
+All errors share one shape: `{"error": {"code": "...", "message": "..."}}`. `tests/test_api.py` mocks the weather
+upstream; `lab04/starter/api-tests/` has curl and Postman checks for a running server.
+
 ## Repository layout
 
 ```text
 lab03/                          Original monolith, data, and refactor worksheet
 data/                           Working CSV and JSON data for the new package
 src/assistant_core/             Complete refactored package
+src/assistant_api/              FastAPI backend over the service (Lab 04)
+lab04/                          Lab 04 starter, practice and worksheets
 tests/                          Characterisation, unit, and real integration tests
 docs/architecture.md            Target modules, service interface, and design decisions
 docs/ai-use-log.md              Record of AI assistance

@@ -31,13 +31,13 @@ jobs:
 
       - name: Run Ruff check (Lab 3)
         run: |
-          ruff check src tests
+          ruff check .
 
-      - name: Run Ruff format check (Lab 3)
+      - name: Run Ruff format check
         run: |
-          ruff format --check src tests
+          ruff format --check .
 
-      - name: Run tests (Lab 3)
+      - name: Run tests
         run: |
           pytest -v tests
 
