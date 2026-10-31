@@ -5,6 +5,7 @@ Endpoints (v1): GET /health, POST /v1/chat, POST /v1/feedback, GET /v1/feedback 
 
 from __future__ import annotations
 
+import threading
 import uuid
 from datetime import datetime, timezone
 
@@ -29,6 +30,7 @@ def create_app(
     )
     limiter = RateLimiter(settings.rate_limit_per_min)
     feedback_store: list[FeedbackOut] = []  # Lab 5 replaces this with a database
+    feedback_lock = threading.Lock()  # ids come from len(); two concurrent posts must not share one
 
     app = FastAPI(
         title="Study Assistant API", version="1.0.0", description="Backend of the CSC10014 Smart Virtual Assistant."
@@ -70,13 +72,14 @@ def create_app(
 
     @app.post("/v1/feedback", response_model=FeedbackOut, status_code=201, tags=["feedback"])
     def add_feedback(fb: FeedbackIn) -> FeedbackOut:
-        item = FeedbackOut(**fb.model_dump(), id=len(feedback_store) + 1, created_at=datetime.now(timezone.utc))
-        feedback_store.append(item)
+        with feedback_lock:
+            item = FeedbackOut(**fb.model_dump(), id=len(feedback_store) + 1, created_at=datetime.now(timezone.utc))
+            feedback_store.append(item)
         return item
 
     @app.get("/v1/feedback", response_model=list[FeedbackOut], tags=["feedback"], dependencies=[Depends(require_admin)])
     def list_feedback() -> list[FeedbackOut]:
-        return feedback_store
+        return list(feedback_store)
 
     @app.get("/v1/weather", response_model=Weather, tags=["external"], responses={503: {"model": ErrorResponse}})
     def campus_weather() -> Weather:

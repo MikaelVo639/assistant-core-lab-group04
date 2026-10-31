@@ -55,14 +55,27 @@ def test_chat_fee(client):
     assert body["intent"] == "fee" and "9,450,000" in body["answer"] and body["request_id"]
 
 
-def test_chat_validation_error(client):
-    r = client.post("/v1/chat", json={"message": ""})
+@pytest.mark.parametrize("message", ["", "   "])
+def test_chat_validation_error(client, message):
+    r = client.post("/v1/chat", json={"message": message})
     assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_request"
 
 
 def test_rate_limit(client):
     codes = [client.post("/v1/chat", json={"message": "hi"}).status_code for _ in range(6)]
     assert codes[-1] == 429
+
+
+def test_rate_limiter_forgets_idle_clients(monkeypatch):
+    from assistant_api import ratelimit
+
+    now = [0.0]
+    monkeypatch.setattr(ratelimit.time, "monotonic", lambda: now[0])
+    limiter = ratelimit.RateLimiter(1)
+    assert limiter.allow("a") and not limiter.allow("a")
+    now[0] = 61
+    assert limiter.allow("b") and "a" not in limiter._hits
+    assert limiter.allow("a")
 
 
 def test_feedback_roundtrip(client):

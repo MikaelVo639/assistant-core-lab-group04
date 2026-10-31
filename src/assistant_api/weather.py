@@ -71,7 +71,8 @@ class WeatherClient:
             except (httpx.HTTPError, KeyError, ValueError) as exc:
                 last_exc = exc
                 log.warning("weather attempt %d failed: %s", attempt + 1, type(exc).__name__)
-                time.sleep(0.2 * (attempt + 1))
+                if attempt < self.retries:  # no point waiting after the last try
+                    time.sleep(0.2 * (attempt + 1))
         if self._cache:  # graceful: stale but useful
             return self._cache[1].model_copy(update={"stale": True})
         raise ExternalServiceError("weather service unavailable") from last_exc

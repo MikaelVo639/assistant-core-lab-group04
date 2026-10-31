@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from assistant_core.models import Intent, Source
 
 
 class ChatRequest(BaseModel):
+    # Strip before length checks so whitespace-only input is a 422 here, not a 500 from Message.
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     message: str = Field(min_length=1, max_length=2000, examples=["tuition for 18 credits and 2 retake"])
     session_id: str = Field(default="anonymous", max_length=64)
 
