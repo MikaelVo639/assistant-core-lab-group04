@@ -29,14 +29,16 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - name: Run Ruff check
+      # Lab 4 is an untouched exercise starter; enable its own checks when implemented.
+      # Keep validating the maintained Lab 3 package and tests.
+      - name: Run Ruff check (Lab 3)
         run: |
-          ruff check .
+          ruff check src tests
 
-      - name: Run Ruff format check
+      - name: Run Ruff format check (Lab 3)
         run: |
-          ruff format --check .
+          ruff format --check src tests
 
-      - name: Run tests
+      - name: Run tests (Lab 3)
         run: |
-          pytest -v
+          pytest -v tests
