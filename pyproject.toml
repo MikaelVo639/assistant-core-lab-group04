@@ -4,10 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "assistant-core"
-version = "0.3.0"
+version = "0.4.0"
 description = "CSC10014 Lab 03 - Group 04 refactoring exercise"
 requires-python = ">=3.10"
-dependencies = ["pydantic>=2.7,<3", "python-dotenv>=1.0,<2"]
+dependencies = [
+    "pydantic>=2.7,<3",
+    "python-dotenv>=1.0,<2",
+    "fastapi>=0.115,<0.116",
+    "httpx>=0.27,<0.28",
+    "uvicorn>=0.30,<0.31",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -19,8 +25,8 @@ testpaths = ["tests"]
 [tool.ruff]
 target-version = "py310"
 line-length = 120
-# Keep the unmodified teaching example for before/after comparison.
-extend-exclude = ["lab03/monolith"]
+# Keep the unmodified teaching examples (lab03 monolith, lab04 starter/practice) for comparison.
+extend-exclude = ["lab03/monolith", "lab04"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "BLE"]

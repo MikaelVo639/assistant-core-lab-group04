@@ -29,16 +29,15 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      # Lab 4 is an untouched exercise starter; enable its own checks when implemented.
-      # Keep validating the maintained Lab 3 package and tests.
-      - name: Run Ruff check (Lab 3)
+      # src/ now holds the Lab 3 core and the Lab 4 API; pyproject excludes the lab03/lab04 teaching copies.
+      - name: Run Ruff check
         run: |
-          ruff check src tests
+          ruff check .
 
-      - name: Run Ruff format check (Lab 3)
+      - name: Run Ruff format check
         run: |
-          ruff format --check src tests
+          ruff format --check .
 
-      - name: Run tests (Lab 3)
+      - name: Run tests
         run: |
-          pytest -v tests
+          pytest -v
