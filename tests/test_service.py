@@ -14,7 +14,7 @@ from assistant_core.service import AssistantService, build_service
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 THESIS_TEXT = (
-    "Students may register a thesis when they have at least 120 accumulated credits " "and a GPA of at least 2.0."
+    "Students may register a thesis when they have at least 120 accumulated credits and a GPA of at least 2.0."
 )
 
 

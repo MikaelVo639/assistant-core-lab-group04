@@ -93,5 +93,3 @@ def create_app(
         return [o.__dict__ for o in service.offices.all()]
 
     return app
-
-    

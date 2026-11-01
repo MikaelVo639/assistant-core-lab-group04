@@ -306,7 +306,3 @@ class Handbook:
         """Search and format the response using the deterministic fallback template."""
         rule = self.search(query)
         return rule.format_fallback_response() if rule else None
-
-    
-
-    
