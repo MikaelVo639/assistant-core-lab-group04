@@ -117,3 +117,10 @@ def test_weather_stale_cache_when_upstream_fails():
     w.cache_ttl_s = 0  # force a refresh on the second call
     assert not w.current().stale
     assert w.current().stale
+
+
+def test_get_offices(client):
+    r = client.get("/v1/offices")
+    assert r.status_code == 200
+    names = [o["name"] for o in r.json()]
+    assert "Library" in names
