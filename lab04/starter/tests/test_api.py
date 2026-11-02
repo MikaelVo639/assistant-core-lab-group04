@@ -1,8 +1,8 @@
+from fastapi.testclient import TestClient
 import httpx
 import pytest
 from assistant_api.main import create_app
 from assistant_api.weather import WeatherClient
-from fastapi.testclient import TestClient
 
 OK_JSON = {"current": {"time": "2026-10-05T09:00", "temperature_2m": 31.2, "weather_code": 3, "wind_speed_10m": 8.5}}
 
