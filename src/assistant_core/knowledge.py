@@ -134,10 +134,6 @@ class OfficeDirectory:
         office = self.find(query)
         return office.format_response() if office else None
 
-    def all(self) -> list[Office]:
-        """Return all loaded office instanced sorted by name."""
-        return sorted(self._offices.values(), key=lambda o: o.name)
-
 
 @dataclass(frozen=True)
 class Rule:
