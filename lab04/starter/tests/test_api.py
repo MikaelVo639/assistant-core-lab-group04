@@ -1,7 +1,6 @@
+from fastapi.testclient import TestClient
 import httpx
 import pytest
-from fastapi.testclient import TestClient
-
 from assistant_api.main import create_app
 from assistant_api.weather import WeatherClient
 
