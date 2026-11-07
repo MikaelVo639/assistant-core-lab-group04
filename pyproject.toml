@@ -25,8 +25,8 @@ testpaths = ["tests"]
 [tool.ruff]
 target-version = "py310"
 line-length = 120
-# Keep the unmodified teaching examples (lab03 monolith, lab04 starter/practice) for comparison.
-extend-exclude = ["lab03/monolith", "lab04"]
+# Keep the unmodified teaching examples (lab03 monolith, lab04/lab05 starter/practice) for comparison.
+extend-exclude = ["lab03/monolith", "lab04", "lab05"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "BLE"]
