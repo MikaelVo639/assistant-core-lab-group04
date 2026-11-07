@@ -29,7 +29,7 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      # src/ now holds the Lab 3 core and the Lab 4 API; pyproject excludes the lab03/lab04 teaching copies.
+      # src/ now holds the Lab 3 core and the Lab 4 API; pyproject excludes the lab03/lab04/lab05 teaching copies.
       - name: Run Ruff check
         run: |
           ruff check .
