@@ -1,0 +1,29 @@
+Lab 5 Part E.6 end-to-end check: real uvicorn server on a fresh SQLite file.
+
+== chat (expect 200)
+{"answer":"Your tuition is 8,100,000 VND.","intent":"fee","sources":[],"degraded":false,"request_id":"27f68e2f5fb6"}
+
+== feedback for that request_id (expect 201)
+{"request_id":"27f68e2f5fb6","rating":1,"comment":"clear answer","id":1,"created_at":"2026-11-13T14:04:09.615026"}  [201]
+
+== feedback for unknown id 'nope' (expect 404)
+{"error":{"code":"unknown_request_id","message":"Unknown request id"}}  [404]
+
+-- server stopped and started again --
+
+== list feedback without key (expect 401)
+{"error":{"code":"missing_or_invalid_api_key","message":"Missing or invalid API key"}}  [401]
+
+== list feedback after restart (expect 200, feedback still there)
+[{"request_id":"27f68e2f5fb6","rating":1,"comment":"clear answer","id":1,"created_at":"2026-11-13T14:04:09.615026"}]  [200]
+
+== tables in assistant.db
+['chat_session', 'feedback', 'interaction']
+chat_session: ['id', 'channel', 'created_at']
+    [('312677ec005ff8de', 'web', '2026-11-13 14:04:09.243330')]
+interaction: ['id', 'request_id', 'session_id', 'intent', 'topic', 'resolved', 'degraded', 'latency_ms', 'created_at']
+    [(1, '27f68e2f5fb6', '312677ec005ff8de', 'fee', None, 1, 0, 0.51, '2026-11-13 14:04:09.243330')]
+feedback: ['id', 'request_id', 'rating', 'comment', 'created_at']
+    [(1, '27f68e2f5fb6', 1, 'clear answer', '2026-11-13 14:04:09.615026')]
+raw text 'student-42' stored anywhere: False
+raw message 'tuition' stored anywhere: False

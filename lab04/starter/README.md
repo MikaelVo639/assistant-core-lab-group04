@@ -1,4 +1,26 @@
-# Study Assistant — backend (Lab 4 reference)
+# Study Assistant — Lab 4 API
+
+P1–P5, T1–T4 and the rate-limit bonus are implemented.
+The starter is standalone with its supplied `assistant_core`; use a separate
+environment from the root Lab 3 package to avoid importing the wrong copy.
+
+## Windows PowerShell (from repository root)
+
+```powershell
+python -m venv lab04/starter/.venv
+lab04/starter/.venv/Scripts/python.exe -m pip install -r lab04/starter/requirements.txt
+lab04/starter/.venv/Scripts/python.exe -m pip install -e lab04/starter
+cd lab04/starter
+.venv/Scripts/python.exe -m pytest -q ../practice
+.venv/Scripts/python.exe -m pytest -q tests
+Copy-Item .env.example .env
+.venv/Scripts/python.exe -m uvicorn assistant_api.main:create_app --factory --reload
+```
+
+Use `/docs` to try the endpoints. The example admin key is for local practice only;
+keep real keys in the ignored `.env` file. Feedback resets when the server restarts.
+Chat is rate limited per client IP (`RATE_LIMIT_PER_MIN`).
+See [verification evidence](../../docs/lab4/README.md).
 
 ## Setup
 ```

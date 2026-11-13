@@ -59,6 +59,23 @@ def test_feedback_roundtrip(client):
     assert listed.status_code == 200 and len(listed.json()) == 1
 
 
+def test_feedback_unknown_request_returns_404(client):
+    r = client.post("/v1/feedback", json={"request_id": "nope", "rating": 1})
+    assert r.status_code == 404 and r.json()["error"]["code"] == "unknown_request_id"
+
+
+def test_feedback_survives_restart(settings, service, tmp_path):
+    db_url = f"sqlite:///{tmp_path / 'assistant.db'}"
+    settings = settings.model_copy(update={"api_admin_key": "secret-admin", "database_url": db_url})
+    weather = weather_with(lambda req: httpx.Response(200, json=OK_JSON))
+    before = TestClient(create_app(settings, service, weather))
+    rid = before.post("/v1/chat", json={"message": "hi"}).json()["request_id"]
+    assert before.post("/v1/feedback", json={"request_id": rid, "rating": -1}).status_code == 201
+    after = TestClient(create_app(settings, service, weather))  # new engine on the same file = a restarted server
+    listed = after.get("/v1/feedback", headers={"X-API-Key": "secret-admin"}).json()
+    assert [(f["request_id"], f["rating"]) for f in listed] == [(rid, -1)]
+
+
 def test_feedback_rating_out_of_range(client):
     assert client.post("/v1/feedback", json={"request_id": "x", "rating": 5}).status_code == 422
 
