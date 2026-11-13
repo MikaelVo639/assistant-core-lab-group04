@@ -3,6 +3,7 @@
 Complete the four functions. Run the tests with:  pytest -q test_school_repo.py
 Rule: ALWAYS use ? placeholders for values — never build SQL with + or f-strings.
 """
+
 import sqlite3
 
 
@@ -13,7 +14,7 @@ def connect(path: str = "school.db") -> sqlite3.Connection:
 def students_in_program(con: sqlite3.Connection, program: str) -> list[str]:
     """Names of students in `program`, sorted A→Z."""
     rows = con.execute("SELECT name FROM students WHERE program = ? ORDER BY name", (program,)).fetchall()
-    return [r[0] for r in rows]                     # example — already done
+    return [r[0] for r in rows]  # example — already done
 
 
 def add_student(con: sqlite3.Connection, name: str, year: int, program: str) -> int:

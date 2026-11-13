@@ -102,7 +102,7 @@ class Repository:
         with Session(self.engine) as db:
             exists = db.exec(select(Interaction).where(Interaction.request_id == request_id)).first()
             if exists is None:
-                return None          # the API turns this into 404
+                return None  # the API turns this into 404
             feedback = Feedback(request_id=request_id, rating=rating, comment=comment)
             db.add(feedback)
             db.commit()

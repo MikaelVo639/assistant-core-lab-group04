@@ -1,4 +1,5 @@
 """Create school.db from school.sql.   Run:  python make_school_db.py"""
+
 import sqlite3
 from pathlib import Path
 

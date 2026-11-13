@@ -2,7 +2,6 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-
 import school_repo as repo
 
 SQL = (Path(__file__).parent / "school.sql").read_text(encoding="utf-8")
@@ -10,7 +9,7 @@ SQL = (Path(__file__).parent / "school.sql").read_text(encoding="utf-8")
 
 @pytest.fixture
 def con():
-    c = sqlite3.connect(":memory:")          # a fresh in-memory copy for every test
+    c = sqlite3.connect(":memory:")  # a fresh in-memory copy for every test
     c.executescript(SQL)
     yield c
     c.close()
@@ -28,7 +27,7 @@ def test_d1_add_student(con):
 
 def test_d1_no_sql_injection(con):
     repo.add_student(con, "Robert'); DROP TABLE students;--", 1, "CS")
-    assert con.execute("SELECT COUNT(*) FROM students").fetchone()[0] == 9     # table still there
+    assert con.execute("SELECT COUNT(*) FROM students").fetchone()[0] == 9  # table still there
 
 
 def test_d2_average_grade(con):
@@ -37,5 +36,8 @@ def test_d2_average_grade(con):
 
 
 def test_d3_transcript(con):
-    assert repo.transcript(con, 2) == [("Computational Thinking", 3, None), ("Data Structures and Algorithms", 4, 5.5),
-                                       ("Fundamentals of Programming", 4, 7.0)]
+    assert repo.transcript(con, 2) == [
+        ("Computational Thinking", 3, None),
+        ("Data Structures and Algorithms", 4, 5.5),
+        ("Fundamentals of Programming", 4, 7.0),
+    ]
