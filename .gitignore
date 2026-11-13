@@ -15,5 +15,6 @@ htmlcov/
 lab03/monolith/history.txt
 .idea/
 .vscode/
-Thumbs.db
+# SQLite files (school.db, assistant.db) are generated locally and may hold data.
+*.db
 .DS_Store

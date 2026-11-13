@@ -2,6 +2,8 @@
 
 Lab 4 in-class API: [setup](lab04/starter/README.md) and
 [verification evidence](docs/lab4/README.md).
+Lab 5 database: [setup](lab05/starter/README.md) and
+[verification evidence](docs/lab5/README.md).
 
 CSC10014 Lab 03: Engineering a Maintainable Python Service, Group 04.
 
