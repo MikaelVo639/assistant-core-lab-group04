@@ -2,8 +2,9 @@
 
 Validated on 2026-11-13 from `lab05/starter` (Python 3.12, pinned `requirements.txt`).
 
-- Practice: `python check.py` scores 15/15 for `my_answers.sql`, `my_answers_MikaelVo639.sql`
-  and `my_answers_Rokieroo.sql`; `pytest -q ../practice` passes 5 (D1-D3, including the injection test).
+- Practice: `python check.py` scores 15/15 for `my_answers.sql`, `my_answers_MikaelVo639.sql`,
+  `my_answers_Rokieroo.sql` and `my_answers_tranquyetthang27.sql`; `pytest -q ../practice` passes 5
+  (D1-D3, including the injection test).
 - Starter: `pytest -q tests` passes 29, including R1/R2, the 404 for an unknown request id and
   `test_feedback_survives_restart` (a second app on the same SQLite file still lists the feedback).
 - Ruff lint and format checks pass; CI runs them for lab04 and lab05 in the `labs` job.
