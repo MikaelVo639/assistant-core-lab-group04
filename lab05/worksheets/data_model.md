@@ -3,9 +3,9 @@
 ## 1. Critique the bad schema (sql/bad_schema.sql)
 | # | Problem | Why it hurts | Fix |
 |---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
+| 1 | Student names and phone numbers repeat on every chat. | These identifiers expose students without helping measure service quality. | Omit both and group interactions by a salted session hash. |
+| 2 | Ratings share one comma-separated text field. | Counting negative ratings requires parsing text. | Store one numeric rating per feedback row and link it to the interaction by request ID. |
+| 3 | Latency contains units in a text field. | Computing an average requires parsing every value. | Store milliseconds in the numeric latency_ms column. |
 | 4 | | | |
 | 5 | | | |
 | 6 | | | |
