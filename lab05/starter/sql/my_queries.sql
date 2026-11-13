@@ -28,3 +28,13 @@ ORDER BY unresolved_requests DESC, intent;
 
 -- H2 result on 300 seeded interactions (intent, unresolved_requests):
 -- ('unknown', 26)
+
+-- H2: What share of answers used a backup (degraded) path?
+SELECT
+    SUM(CASE WHEN degraded = 1 THEN 1 ELSE 0 END) AS degraded_count,
+    COUNT(*) AS total_count,
+    ROUND(100.0 * SUM(CASE WHEN degraded = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS degraded_pct
+FROM interaction;
+
+-- H2 result on 300 seeded interactions (degraded_count, total_count, degraded_pct):
+-- (38, 300, 12.67)
