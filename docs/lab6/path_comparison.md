@@ -104,3 +104,24 @@ The language model's job is simply to phrase a concise answer from the excerpts 
 Before calling the model at all, our code checks `hits[0].score < self.min_score` in `RagAnswerer` and immediately abstains if no section is relevant enough.
 After the model replies, `parse_draft` enforces strict JSON validation and rejects any response whose cited `source_ids` are empty or outside the retrieved `allowed_ids` set.
 The model only generates candidate text and cannot reliably police itself against hallucinated citations or unanswerable queries without those deterministic checks in code.
+
+---
+
+## Bonus: H3 (Stripping plural `s` in `tokenize`)
+
+### Before
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 9/25 | 7/7 | 0.0 | 1.9 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 |
+| `retrieval` | 18/25 | 5/7 | 0.1 | 0.3 | E13 E14 E15 E19 E21 E22 E24 |
+| `llm (stub)` | 18/25 | 5/7 | 0.4 | 1.0 | E13 E14 E15 E19 E21 E22 E24 |
+
+### After
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 9/25 | 7/7 | 0.0 | 1.1 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 |
+| `retrieval` | 18/25 | 5/7 | 0.1 | 0.3 | E13 E14 E15 E19 E20 E21 E22 |
+| `llm (stub)` | 18/25 | 5/7 | 0.3 | 1.6 | E13 E14 E15 E19 E20 E21 E22 |
+
+### Observation
+Stripping a trailing `"s"` from words longer than 4 characters in `tokenize` kept the overall score at **18/25** (`abstain ok: 5/7`). **E14** (`"can I take 32 credits"`) still failed because matching `"credit"` alone is not enough to beat other chunks or reach `min_score = 2.0`. Meanwhile, **E24** started passing, while **E20** (`"tell me about exams"`) began failing because `"exams"` became `"exam"` and matched an existing chunk instead of abstaining.
