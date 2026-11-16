@@ -57,6 +57,6 @@ def search(index: dict[str, set[str]], query: str, k: int = 2) -> list[tuple[str
     for word in tokenize(query):
         for doc_id in index.get(word, set()):
             scores[doc_id] = scores.get(doc_id, 0) + 1
-    # TODO S2: for each word in tokenize(query): for each doc_id in index.get(word, set()): scores[doc_id] += 1
-    # TODO S3: sort by (-score, doc_id) and return the first k
-    return sorted(scores.items(), key=lambda item: (-item[1], item[0]))[:k]
+
+    ranked = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
+    return ranked[:k]
