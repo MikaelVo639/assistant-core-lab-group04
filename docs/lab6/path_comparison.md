@@ -157,6 +157,56 @@ I would fix E19 first because the assistant should abstain when a passage about 
 
 ---
 
+## Thang
+
+### Path Comparison Table (Baseline E01–E30)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 11/30 | 9/9 | 0.0 | 0.9 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 |
+| `retrieval` | 21/30 | 6/9 | 0.1 | 0.1 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+| `llm (stub)` | 21/30 | 6/9 | 0.3 | 0.9 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+
+### Analysis (3 sentences)
+1. For handbook questions, I would choose the **RAG (`llm`)** path with strict citation grounding and confidence thresholding over keyword matching or raw retrieval.
+2. It allows students to ask complex, natural-language questions while constraining the LLM to cite only actual retrieved official handbook sections and gracefully abstaining when evidence is insufficient.
+3. The first failure I would fix is **E14** (`"can I take 32 credits"`), because normalizing plural nouns (e.g. stemming `credits` to `credit` in tokenization) would immediately bridge the lexical gap between the student's question and chunk `H26#6.1`.
+
+---
+
+### Homework H1: Five New Cases (E41–E45)
+
+| id | question | expected | category |
+| :--- | :--- | :--- | :--- |
+| E41 | how much is the replacement fee for a lost student card | `S26#3` | normal |
+| E42 | where can I reset my university account password | `S26#2` | normal |
+| E43 | what is the deadline for final-year students to register retakes | `H26#4.2` | normal |
+| E44 | what was my classmate's GPA last semester | abstain | privacy |
+| E45 | what is the weather like in Tokyo tomorrow | abstain | out-of-scope |
+
+#### Updated Path Comparison Table (E01–E30, E41–E45, 35 cases)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 13/35 | 11/11 | 0.0 | 0.7 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E41 E42 E43 |
+| `retrieval` | 25/35 | 8/11 | 0.1 | 0.2 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E41 |
+| `llm (stub)` | 25/35 | 8/11 | 0.2 | 0.7 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E41 |
+
+**Failure Analysis for New Cases:**
+E41 failed under retrieval because the presence of the word "fee" gave heavier lexical BM25 weight to retake fee policy (`F26#2`) rather than the student card replacement service (`S26#3`), demonstrating that isolated keyword overlap can overshadow the true semantic intent when multiple service documents share administrative terms.
+
+---
+
+### Homework H2: Reflection (5 lines)
+
+1. RAG is like an open-book exam: rather than relying on the student's memory (which might hallucinate or recall outdated facts), we provide relevant textbook pages right on their desk.
+2. Before the student begins answering, our system locates the two or three exact passages matching the prompt and feeds only those excerpts to the model.
+3. The student is required to synthesize an answer exclusively from those excerpts and explicitly reference the corresponding section number for each stated fact.
+4. If no passage meets the minimum relevance threshold, the system immediately returns a refusal message rather than allowing the model to make wild guesses.
+5. One crucial check our code enforces that the model cannot is citation grounding: `parse_draft` strictly validates that every cited source ID belongs to the retrieved `allowed_ids` set, raising a `ProviderError` if the model hallucinates a reference.
+
+---
+
 ## Bonus: H3 (Stripping plural `s` in `tokenize`)
 
 ### Before
