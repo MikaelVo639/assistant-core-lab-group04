@@ -68,3 +68,39 @@ Before the student writes anything, we find the two or three pages that match th
 The student must answer from those pages and write down which page each fact came from, instead of answering from memory.
 If no page matches well enough, the student hands in a blank sheet that says "ask the Training Office" instead of guessing.
 One thing our code checks that the model does not: in `parse_draft`, every cited source id must be one of the retrieved pages, otherwise the answer is rejected.
+
+---
+
+## Thinh
+
+### Path Comparison Baseline (`E01–E20`)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 7/20 | 5/5 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 |
+| `retrieval` | 16/20 | 4/5 | 0.0 | 0.1 | E13 E14 E15 E19 |
+| `llm (stub)` | 16/20 | 4/5 | 0.2 | 0.6 | E13 E14 E15 E19 |
+
+### Path Comparison Analysis (3 sentences)
+
+For handbook questions, I would use the **RAG (`llm`)** path with `min_score` abstention before the model call and citation validation afterwards.
+It grounds answers in retrieved policy chunks, blocks fabricated or unretrieved `source_ids` via `parse_draft`, and degrades safely to quoting the top chunk if the provider fails.
+First, I would fix **E14** (`"can I take 32 credits"`) by normalizing simple plural inflections such as `credits` -> `credit` in tokenization so paraphrased rule queries score above `min_score` without weakening abstention.
+
+### Homework H1: Evaluation with 5 New Cases (`E31–E35`, 35 Cases Total on Branch)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 13/35 | 11/11 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E31 E32 E33 |
+| `retrieval` | 26/35 | 8/11 | 0.0 | 0.1 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+| `llm (stub)` | 26/35 | 8/11 | 0.2 | 0.5 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+
+All five of Thinh's new cases (`E31–E35`) passed on both `retrieval` and `llm (stub)`, while `E31–E33` failed only on `deterministic` because it does not search the markdown knowledge base (and earlier failures like `E26` and `E29` occurred because router office keywords or unmatched privacy nouns bypassed KB retrieval or the regex guard).
+
+### Homework H2: Reflection (5 lines)
+
+RAG works like an open-book exam where the retriever finds the relevant handbook pages first and hands only those pages to the model.
+The language model's job is simply to phrase a concise answer from the excerpts it was given, rather than guessing rules from memory.
+Before calling the model at all, our code checks `hits[0].score < self.min_score` in `RagAnswerer` and immediately abstains if no section is relevant enough.
+After the model replies, `parse_draft` enforces strict JSON validation and rejects any response whose cited `source_ids` are empty or outside the retrieved `allowed_ids` set.
+The model only generates candidate text and cannot reliably police itself against hallucinated citations or unanswerable queries without those deterministic checks in code.
