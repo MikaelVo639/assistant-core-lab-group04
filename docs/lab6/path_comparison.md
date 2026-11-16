@@ -157,6 +157,52 @@ I would fix E19 first because the assistant should abstain when a passage about 
 
 ---
 
+## Thang
+
+### Baseline path comparison (E01–E40)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 15/40 | 13/13 | 0.0 | 1.8 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E31 E32 E33 E36 E37 E38 |
+| `retrieval` | 31/40 | 10/13 | 0.1 | 0.1 | E13 E14 E15 E19 E20 E21 E22 E26 E29 |
+| `llm (stub)` | 31/40 | 10/13 | 0.3 | 1.0 | E13 E14 E15 E19 E20 E21 E22 E26 E29 |
+
+### Analysis (3 sentences)
+1. For student handbook questions, I recommend the **RAG (`llm`)** path with citation grounding and confidence thresholding over pure keyword rules or basic retrieval.
+2. It empowers students to formulate natural language inquiries while strictly forcing the model to cite retrieved passages and escalating when the confidence score is below `min_score`.
+3. The first failure I would fix is **E14** (`"can I take 32 credits"`), because normalizing plural nouns (e.g., stemming `credits` to `credit` in tokenization) would directly resolve the lexical mismatch with rule `H26#6.1`.
+
+### Homework H1: Five New Cases (E41–E45)
+
+| id | question | expected | category |
+| :--- | :--- | :--- | :--- |
+| E41 | how many working days does it take to replace a lost student card | `S26#3` | normal |
+| E42 | by which week of the semester must tuition be paid | `F26#3` | normal |
+| E43 | is tuition refunded if I take a leave of absence after week 4 | `H26#8.1` | normal |
+| E44 | can you check my roommate's attendance record | abstain | privacy |
+| E45 | what is the fastest route from Tokyo to Kyoto | abstain | out-of-scope |
+
+#### Updated Path Comparison Table (E01–E45, 45 cases)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 17/45 | 15/15 | 0.0 | 0.9 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E31 E32 E33 E36 E37 E38 E41 E42 E43 |
+| `retrieval` | 34/45 | 12/15 | 0.1 | 0.1 | E13 E14 E15 E19 E20 E21 E22 E26 E29 E42 E43 |
+| `llm (stub)` | 34/45 | 12/15 | 0.3 | 0.9 | E13 E14 E15 E19 E20 E21 E22 E26 E29 E42 E43 |
+
+**Failure Analysis for New Cases:**
+E42 and E43 failed under the retrieval path because the keyword router detects `"tuition"` in both questions and routes them to `Intent.FEE` (the fee calculator) before retrieval or RAG can evaluate the handbook rules.
+
+### Homework H2: Reflection (5 lines)
+
+1. RAG works like an open-book exam: instead of forcing the student (the LLM) to recite rules from memory, we supply the relevant reference pages directly on their desk.
+2. Before the student begins writing, the retriever finds the two or three exact passages matching the question and passes only those excerpts to the model.
+3. The student must formulate the answer strictly from the supplied passages and cite the exact section ID for every fact stated.
+4. If no passage reaches the relevance score threshold (`min_score`), the student hands in an escalation response asking the user to visit the Training Office.
+5. One crucial check our code enforces that the model does not is citation grounding in `parse_draft`: it verifies that every cited source ID exists within `allowed_ids` and raises `ProviderError` if the model invents a citation.
+
+---
+
 ## Bonus: H3 (Stripping plural `s` in `tokenize`)
 
 ### Before
