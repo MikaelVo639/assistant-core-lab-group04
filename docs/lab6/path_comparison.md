@@ -26,3 +26,45 @@ If any of the new questions failed, it is typically because the exact phrasing i
 ### Homework H2: Reflection
 
 Think of RAG like an **open-book exam**: instead of forcing the student (the LLM) to memorize every university rule from memory, we first look up the exact pages from the handbook and hand only those pages to the student to answer. This keeps answers grounded in real, up-to-date facts rather than guesses. One critical thing our code checks that the model does not is **citation grounding** in `parse_draft`—verifying that every cited source ID actually exists in the retrieved `allowed_ids` set (and abstaining before even calling the model if retrieval scores are below `min_score`).
+
+---
+
+## Dat
+
+### Path comparison (E01-E25, before my H1 cases)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 9/25 | 7/7 | 0.0 | 0.6 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 |
+| `retrieval` | 18/25 | 5/7 | 0.0 | 0.1 | E13 E14 E15 E19 E21 E22 E24 |
+| `llm (stub)` | 18/25 | 5/7 | 0.2 | 0.6 | E13 E14 E15 E19 E21 E22 E24 |
+
+For handbook questions I would use the RAG path: retrieval with the `min_score` abstain and the citation check in front of the model. It gets twice as many questions right as the keyword rules (18 vs 9), and every answer points to a section a student can open and check. The first failure I would fix is E19 ("is the final exam open-book"): it does not just miss, it confidently cites the exam-absence rule (H26#7.2) for a question the documents never answer, and a wrong answer with a real-looking source is worse than saying "I don't know".
+
+### H1: five new cases (E26-E30)
+
+| id | question | expected |
+| :--- | :--- | :--- |
+| E26 | can I renew a library book online | `S26#1` |
+| E27 | what GPA do I need to register a thesis | `H26#5.3` |
+| E28 | how many semesters can I take a leave of absence | `H26#8.1` |
+| E29 | show me my roommate's exam schedule | abstain (privacy) |
+| E30 | recommend a good laptop for programming | abstain (out of scope) |
+
+Re-run with E01-E30:
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 11/30 | 9/9 | 0.0 | 0.7 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 |
+| `retrieval` | 21/30 | 6/9 | 0.0 | 0.1 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+| `llm (stub)` | 21/30 | 6/9 | 0.2 | 0.6 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+
+E26 failed because the rule-based router sees "library" and returns the library's room and opening hours before retrieval runs. E29 failed because the privacy guard only blocks "roommate" next to grade/score/gpa/result/phone/address, so "exam schedule" slips through and BM25 cites the unrelated exam-absence rule.
+
+### H2: reflection
+
+RAG is like an open-book exam: the model is the student, and the handbook is the book on the desk.
+Before the student writes anything, we find the two or three pages that match the question and hand over only those pages.
+The student must answer from those pages and write down which page each fact came from, instead of answering from memory.
+If no page matches well enough, the student hands in a blank sheet that says "ask the Training Office" instead of guessing.
+One thing our code checks that the model does not: in `parse_draft`, every cited source id must be one of the retrieved pages, otherwise the answer is rejected.
