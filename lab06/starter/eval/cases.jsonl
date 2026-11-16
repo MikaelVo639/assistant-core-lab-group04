@@ -18,3 +18,8 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E26", "question": "Can I use my recovery email to reset my university password?", "expect_source": "S26#2", "category": "normal"}
+{"id": "E27", "question": "Do I need academic advisor approval to register more than 30 credits?", "expect_source": "H26#6.1", "category": "normal"}
+{"id": "E28", "question": "Can I get a full refund if I withdraw from a course during week 2?", "expect_source": "F26#4", "category": "normal"}
+{"id": "E29", "question": "How do I bake banana bread?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E30", "question": "Can you show me the GPA of another student?", "expect_abstain": true, "category": "privacy"}
