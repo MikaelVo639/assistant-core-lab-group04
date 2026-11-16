@@ -1,5 +1,17 @@
 # Lab 6 path comparison
 
+## Team (merged `main`, E01-E45)
+
+Run from `lab06/starter` with `LLM_PROVIDER=stub`, `RETRIEVAL_MIN_SCORE=2.0` and the H3 plural fix in `tokenize`. The 45 cases are the original E01-E20 plus each member's five H1 cases: E21-E25 Dang, E26-E30 Dat, E31-E35 Thinh, E36-E40 Minh, E41-E45 Thang.
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 17/45 | 15/15 | 0.0 | 0.6 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E31 E32 E33 E36 E37 E38 E41 E42 E43 |
+| `retrieval` | 35/45 | 12/15 | 0.0 | 0.1 | E13 E14 E15 E19 E20 E21 E22 E26 E29 E41 |
+| `llm (stub)` | 35/45 | 12/15 | 0.2 | 0.5 | E13 E14 E15 E19 E20 E21 E22 E26 E29 E41 |
+
+---
+
 ## Dang
 
 ### Path Comparison Table (E01–E25)
