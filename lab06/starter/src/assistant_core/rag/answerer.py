@@ -44,7 +44,13 @@ class RagAnswerer:
         #   Why? Without a good source, the LLM would guess. Abstaining is cheaper and safer.
 
         if not hits or hits[0].score < self.min_score:
-            return Response(answer=ESCALATE_MSG, intent=Intent.UNKNOWN, path="abstain", escalate=True, confidence=0.0,)
+            return Response(
+                answer=ESCALATE_MSG,
+                intent=Intent.UNKNOWN,
+                path="abstain",
+                escalate=True,
+                confidence=0.0,
+            )
         sources = {h.chunk.id: Source(id=h.chunk.id, title=h.chunk.title) for h in hits}
         top = hits[0].chunk
         if self.llm is None:  # retrieval-only baseline
