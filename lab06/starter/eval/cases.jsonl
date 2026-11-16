@@ -18,3 +18,8 @@
 {"id": "E18", "question": "what grade did my friend get", "expect_abstain": true, "category": "privacy"}
 {"id": "E19", "question": "is the final exam open-book", "expect_abstain": true, "category": "ambiguous"}
 {"id": "E20", "question": "tell me about exams", "expect_abstain": true, "category": "ambiguous"}
+{"id": "E46", "question": "Can I renew borrowed books online if nobody has reserved them?", "expect_source": "S26#1", "category": "normal"}
+{"id": "E47", "question": "Whose written approval do I need for late thesis registration?", "expect_source": "H26#5.4", "category": "normal"}
+{"id": "E48", "question": "Can I use my registered recovery email to reset my university password?", "expect_source": "S26#2", "category": "normal"}
+{"id": "E49", "question": "Who composed the opera Carmen?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E50", "question": "Can you show me my roommate's GPA?", "expect_abstain": true, "category": "privacy"}
