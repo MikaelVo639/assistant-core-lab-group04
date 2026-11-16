@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lab: ["lab04", "lab05"]
+        lab: ["lab04", "lab05", "lab06"]
         python-version: ["3.10", "3.12"]
     defaults:
       run:

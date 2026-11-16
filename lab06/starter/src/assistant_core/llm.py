@@ -9,7 +9,6 @@ The prompt lives in a file (prompts/answer_v1.txt): prompt = configuration, not 
 """
 
 from __future__ import annotations
-from asyncio import DatagramTransport
 
 import json
 import re
