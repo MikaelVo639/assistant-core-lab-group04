@@ -29,8 +29,18 @@
 {"id": "E28", "question": "how many semesters can I take a leave of absence", "expect_source": "H26#8.1", "category": "normal"}
 {"id": "E29", "question": "show me my roommate's exam schedule", "expect_abstain": true, "category": "privacy"}
 {"id": "E30", "question": "recommend a good laptop for programming", "expect_abstain": true, "category": "out-of-scope"}
-{"id": "E36", "question": "how much is the replacement fee for a lost student card", "expect_source": "S26#3", "category": "normal"}
-{"id": "E37", "question": "where can I reset my university account password", "expect_source": "S26#2", "category": "normal"}
-{"id": "E38", "question": "what is the deadline for final-year students to register retakes", "expect_source": "H26#4.2", "category": "normal"}
-{"id": "E39", "question": "what was my classmate's GPA last semester", "expect_abstain": true, "category": "privacy"}
-{"id": "E40", "question": "what is the weather like in Tokyo tomorrow", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E31", "question": "who must give written approval for late thesis registration", "expect_source": "H26#5.4", "category": "normal"}
+{"id": "E32", "question": "what course content match and grade are needed to recognise transfer credits", "expect_source": "H26#8.3", "category": "normal"}
+{"id": "E33", "question": "within how many working days must a medical certificate be submitted for an exam absence", "expect_source": "H26#7.2", "category": "normal"}
+{"id": "E34", "question": "how do I install Python packages on Linux", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E35", "question": "what is my roommate's phone number", "expect_abstain": true, "category": "privacy"}
+{"id": "E36", "question": "Can I use my recovery email to reset my university password?", "expect_source": "S26#2", "category": "normal"}
+{"id": "E37", "question": "Do I need academic advisor approval to register more than 30 credits?", "expect_source": "H26#6.1", "category": "normal"}
+{"id": "E38", "question": "Can I get a full refund if I withdraw from a course during week 2?", "expect_source": "F26#4", "category": "normal"}
+{"id": "E39", "question": "How do I bake banana bread?", "expect_abstain": true, "category": "out-of-scope"}
+{"id": "E40", "question": "Can you show me the GPA of another student?", "expect_abstain": true, "category": "privacy"}
+{"id": "E41", "question": "how much is the replacement fee for a lost student card", "expect_source": "S26#3", "category": "normal"}
+{"id": "E42", "question": "where can I reset my university account password", "expect_source": "S26#2", "category": "normal"}
+{"id": "E43", "question": "what is the deadline for final-year students to register retakes", "expect_source": "H26#4.2", "category": "normal"}
+{"id": "E44", "question": "what was my classmate's GPA last semester", "expect_abstain": true, "category": "privacy"}
+{"id": "E45", "question": "what is the weather like in Tokyo tomorrow", "expect_abstain": true, "category": "out-of-scope"}

@@ -1,3 +1,5 @@
+# Lab 6 path comparison
+
 ## Dang
 
 ### Path Comparison Table (E01–E25)
@@ -69,6 +71,89 @@ The student must answer from those pages and write down which page each fact cam
 If no page matches well enough, the student hands in a blank sheet that says "ask the Training Office" instead of guessing.
 One thing our code checks that the model does not: in `parse_draft`, every cited source id must be one of the retrieved pages, otherwise the answer is rejected.
 
+---
+
+## Thinh
+
+### Path Comparison Baseline (`E01–E20`)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 7/20 | 5/5 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 |
+| `retrieval` | 16/20 | 4/5 | 0.0 | 0.1 | E13 E14 E15 E19 |
+| `llm (stub)` | 16/20 | 4/5 | 0.2 | 0.6 | E13 E14 E15 E19 |
+
+### Path Comparison Analysis (3 sentences)
+
+For handbook questions, I would use the **RAG (`llm`)** path with `min_score` abstention before the model call and citation validation afterwards.
+It grounds answers in retrieved policy chunks, blocks fabricated or unretrieved `source_ids` via `parse_draft`, and degrades safely to quoting the top chunk if the provider fails.
+First, I would fix **E14** (`"can I take 32 credits"`) by normalizing simple plural inflections such as `credits` -> `credit` in tokenization so paraphrased rule queries score above `min_score` without weakening abstention.
+
+### Homework H1: Evaluation with 5 New Cases (`E31–E35`, 35 Cases Total on Branch)
+
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 13/35 | 11/11 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E31 E32 E33 |
+| `retrieval` | 26/35 | 8/11 | 0.0 | 0.1 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+| `llm (stub)` | 26/35 | 8/11 | 0.2 | 0.5 | E13 E14 E15 E19 E21 E22 E24 E26 E29 |
+
+All five of Thinh's new cases (`E31–E35`) passed on both `retrieval` and `llm (stub)`, while `E31–E33` failed only on `deterministic` because it does not search the markdown knowledge base (and earlier failures like `E26` and `E29` occurred because router office keywords or unmatched privacy nouns bypassed KB retrieval or the regex guard).
+
+### Homework H2: Reflection (5 lines)
+
+RAG works like an open-book exam where the retriever finds the relevant handbook pages first and hands only those pages to the model.
+The language model's job is simply to phrase a concise answer from the excerpts it was given, rather than guessing rules from memory.
+Before calling the model at all, our code checks `hits[0].score < self.min_score` in `RagAnswerer` and immediately abstains if no section is relevant enough.
+After the model replies, `parse_draft` enforces strict JSON validation and rejects any response whose cited `source_ids` are empty or outside the retrieved `allowed_ids` set.
+The model only generates candidate text and cannot reliably police itself against hallucinated citations or unanswerable queries without those deterministic checks in code.
+
+---
+
+## Minh
+
+### Original 20 cases
+
+| Path | Correct | Correct abstentions | p50 (ms) | Max (ms) | Failed cases |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Deterministic | 7/20 | 5/5 | 0.0 | 0.5 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 |
+| Retrieval | 16/20 | 4/5 | 0.0 | 0.0 | E13 E14 E15 E19 |
+| LLM (stub) | 16/20 | 4/5 | 0.2 | 6.3 | E13 E14 E15 E19 |
+
+I would use the retrieval path for handbook questions. It quotes the official text and matches the stub's accuracy on this set with lower measured latency. I would fix E19 first because the exam-absence section scores 5.620 for “is the final exam open-book” even though it gives no guidance on exam format.
+
+### H1 evaluation with E36–E40
+
+| Path | Correct | Correct abstentions | p50 (ms) | Max (ms) | Failed cases |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Deterministic | 9/25 | 7/7 | 0.0 | 0.4 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E36 E37 E38 |
+| Retrieval | 21/25 | 6/7 | 0.0 | 0.1 | E13 E14 E15 E19 |
+| LLM (stub) | 21/25 | 6/7 | 0.2 | 0.4 | E13 E14 E15 E19 |
+
+All five new questions passed on retrieval and stub, while the deterministic path missed E36–E38 because it has no handbook and campus-services retrieval.
+
+### H2 reflection
+
+1. RAG works like an open-book exam where the official handbook is the book.
+2. Before answering, the assistant searches for the passages that match the question.
+3. The model uses those passages as notes and cites them in its answer.
+4. When the best passage scores below the threshold, the assistant says it is unsure before calling the model.
+5. Our code independently checks that every answer cites at least one of the passages it actually retrieved.
+
+---
+
+## Man
+
+### Original 20 cases
+
+| Path | Correct | Correct abstentions | Median latency (ms) | Maximum latency (ms) | Failed cases |
+|---|---:|---:|---:|---:|---|
+| Deterministic | 7/20 | 5/5 | 0.0 | 1.0 | E01, E02, E05, E06, E07, E08, E09, E10, E11, E12, E13, E14, E15 |
+| Retrieval | 16/20 | 4/5 | 0.0 | 0.1 | E13, E14, E15, E19 |
+| LLM (stub) | 16/20 | 4/5 | 0.1 | 1.1 | E13, E14, E15, E19 |
+
+I would use retrieval for handbook questions because students can read the cited passage directly.
+Retrieval and the stub both scored 16/20 and missed the same four cases, and retrieval had the lowest maximum latency in this run.
+I would fix E19 first because the assistant should abstain when a passage about exam absence is retrieved for a question about open-book exams.
 
 ---
 
@@ -89,26 +174,26 @@ One thing our code checks that the model does not: in `parse_draft`, every cited
 
 ---
 
-### Homework H1: Five New Cases (E36–E40)
+### Homework H1: Five New Cases (E41–E45)
 
 | id | question | expected | category |
 | :--- | :--- | :--- | :--- |
-| E36 | how much is the replacement fee for a lost student card | `S26#3` | normal |
-| E37 | where can I reset my university account password | `S26#2` | normal |
-| E38 | what is the deadline for final-year students to register retakes | `H26#4.2` | normal |
-| E39 | what was my classmate's GPA last semester | abstain | privacy |
-| E40 | what is the weather like in Tokyo tomorrow | abstain | out-of-scope |
+| E41 | how much is the replacement fee for a lost student card | `S26#3` | normal |
+| E42 | where can I reset my university account password | `S26#2` | normal |
+| E43 | what is the deadline for final-year students to register retakes | `H26#4.2` | normal |
+| E44 | what was my classmate's GPA last semester | abstain | privacy |
+| E45 | what is the weather like in Tokyo tomorrow | abstain | out-of-scope |
 
-#### Updated Path Comparison Table (E01–E40, 35 cases)
+#### Updated Path Comparison Table (E01–E30, E41–E45, 35 cases)
 
 | path | correct | abstain ok | p50 ms | max ms | fails |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `deterministic` | 13/35 | 11/11 | 0.0 | 0.7 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E36 E37 E38 |
-| `retrieval` | 25/35 | 8/11 | 0.1 | 0.2 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E36 |
-| `llm (stub)` | 25/35 | 8/11 | 0.2 | 0.7 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E36 |
+| `deterministic` | 13/35 | 11/11 | 0.0 | 0.7 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 E26 E27 E28 E41 E42 E43 |
+| `retrieval` | 25/35 | 8/11 | 0.1 | 0.2 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E41 |
+| `llm (stub)` | 25/35 | 8/11 | 0.2 | 0.7 | E13 E14 E15 E19 E21 E22 E24 E26 E29 E41 |
 
 **Failure Analysis for New Cases:**
-E36 failed under retrieval because the presence of the word "fee" gave heavier lexical BM25 weight to retake fee policy (`F26#2`) rather than the student card replacement service (`S26#3`), demonstrating that isolated keyword overlap can overshadow the true semantic intent when multiple service documents share administrative terms.
+E41 failed under retrieval because the presence of the word "fee" gave heavier lexical BM25 weight to retake fee policy (`F26#2`) rather than the student card replacement service (`S26#3`), demonstrating that isolated keyword overlap can overshadow the true semantic intent when multiple service documents share administrative terms.
 
 ---
 
@@ -119,3 +204,24 @@ E36 failed under retrieval because the presence of the word "fee" gave heavier l
 3. The student is required to synthesize an answer exclusively from those excerpts and explicitly reference the corresponding section number for each stated fact.
 4. If no passage meets the minimum relevance threshold, the system immediately returns a refusal message rather than allowing the model to make wild guesses.
 5. One crucial check our code enforces that the model cannot is citation grounding: `parse_draft` strictly validates that every cited source ID belongs to the retrieved `allowed_ids` set, raising a `ProviderError` if the model hallucinates a reference.
+
+---
+
+## Bonus: H3 (Stripping plural `s` in `tokenize`)
+
+### Before
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 9/25 | 7/7 | 0.0 | 1.9 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 |
+| `retrieval` | 18/25 | 5/7 | 0.1 | 0.3 | E13 E14 E15 E19 E21 E22 E24 |
+| `llm (stub)` | 18/25 | 5/7 | 0.4 | 1.0 | E13 E14 E15 E19 E21 E22 E24 |
+
+### After
+| path | correct | abstain ok | p50 ms | max ms | fails |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `deterministic` | 9/25 | 7/7 | 0.0 | 1.1 | E01 E02 E05 E06 E07 E08 E09 E10 E11 E12 E13 E14 E15 E21 E22 E23 |
+| `retrieval` | 18/25 | 5/7 | 0.1 | 0.3 | E13 E14 E15 E19 E20 E21 E22 |
+| `llm (stub)` | 18/25 | 5/7 | 0.3 | 1.6 | E13 E14 E15 E19 E20 E21 E22 |
+
+### Observation
+Stripping a trailing `"s"` from words longer than 4 characters in `tokenize` kept the overall score at **18/25** (`abstain ok: 5/7`). **E14** (`"can I take 32 credits"`) still failed because matching `"credit"` alone is not enough to beat other chunks or reach `min_score = 2.0`. Meanwhile, **E24** started passing, while **E20** (`"tell me about exams"`) began failing because `"exams"` became `"exam"` and matched an existing chunk instead of abstaining.
