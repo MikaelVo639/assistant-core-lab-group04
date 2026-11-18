@@ -87,3 +87,10 @@ def test_privacy_guard(q):
 
 def test_privacy_guard_allows_own_questions():
     assert not is_private_request("what is my GPA requirement for the thesis")
+
+
+def test_tokenize_strips_plural_s_over_4_chars():
+    from assistant_core.rag.index import tokenize
+
+    assert tokenize("credits") == ["credit"]
+    assert tokenize("fees") == ["fees"]
