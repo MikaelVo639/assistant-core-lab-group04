@@ -36,7 +36,7 @@ class AssistantClient:
         if r.status_code == 429:
             return ChatResult(ok=False, error="Too many questions in a short time. Please wait a minute.")
         if r.status_code != 200:
-            return ChatResult(ok=False, error=f"Something went wrong on our side (error {r.status_code}).")
+            return ChatResult(ok=False, error="Something went wrong on our side. Please try again.")
         d = r.json()
         return ChatResult(ok=True, answer=d["answer"], intent=d["intent"], sources=d.get("sources", []),
                           path=d.get("path", ""), escalate=d.get("escalate", False),
