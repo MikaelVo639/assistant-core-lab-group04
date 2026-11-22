@@ -25,7 +25,9 @@ def test_ask_backend_down():
 
 def test_ask_validation_and_server_errors():
     assert "type a question" in client_with(lambda req: httpx.Response(422)).ask("", "s").error
-    assert "error 500" in client_with(lambda req: httpx.Response(500)).ask("x", "s").error
+    assert client_with(lambda req: httpx.Response(500)).ask("x", "s").error == (
+        "Something went wrong on our side. Please try again."
+    )
 
 
 def test_feedback():
