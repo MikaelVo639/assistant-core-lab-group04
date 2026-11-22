@@ -58,7 +58,9 @@ for i, m in enumerate(st.session_state.messages):
         if m.get("note"):
             st.info(m["note"])
         rid = m.get("request_id")
-        if rid and rid not in st.session_state.rated:
+        if rid in st.session_state.rated:
+            st.caption("Feedback recorded.")
+        elif rid:
             c1, c2 = st.columns(2)
             c1.button(
                 "👍 Helpful", key=f"up{i}", on_click=record_feedback,
