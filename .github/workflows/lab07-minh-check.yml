@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
@@ -17,13 +17,14 @@ jobs:
       - name: Install Lab 7 and browser test dependencies
         run: |
           python -m pip install -r lab07/starter/requirements.txt playwright==1.51.0
-          python -m playwright install --with-deps chromium
       - name: Practice tests
         working-directory: lab07/practice
         run: python -m pytest -q test_hello_streamlit.py
       - name: Starter tests
         working-directory: lab07/starter
         run: python -m pytest -q
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
       - name: Browser verification on the individual branch
         working-directory: lab07/starter
         env:
