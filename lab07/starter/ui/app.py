@@ -2,6 +2,7 @@
 
 The UI never imports assistant_core: it only talks to the backend through the HTTP API.
 """
+
 import os
 import sys
 import uuid
@@ -9,7 +10,7 @@ from pathlib import Path
 
 import streamlit as st
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # so "import ui..." works under streamlit
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so "import ui..." works under streamlit
 
 from ui.api_client import AssistantClient
 from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_input
@@ -25,7 +26,22 @@ if "messages" not in st.session_state:
 if "rated" not in st.session_state:
     st.session_state.rated = set()
 
+
+def submit_feedback(request_id: str, rating: int, confirmation: str) -> None:
+    """Send user feedback and record confirmation only when the API accepts it."""
+    if request_id in st.session_state.rated:
+        return
+    if client.send_feedback(request_id, rating):
+        st.session_state.rated.add(request_id)
+        st.session_state.feedback_notice = confirmation
+    else:
+        st.session_state.feedback_notice = "Could not save feedback right now. Please try again."
+
+
 st.title("🎓 FIT Study Assistant")
+st.caption("This is an AI assistant. Check important decisions with the Training Office.")
+if notice := st.session_state.pop("feedback_notice", None):
+    st.toast(notice)
 if not client.healthy():
     st.error("The assistant backend is not reachable. Start it with: uvicorn assistant_api.main:create_app --factory")
 
@@ -34,7 +50,6 @@ with st.sidebar:
     for ex in EXAMPLES:
         if st.button(ex, use_container_width=True):
             st.session_state.pending = ex
-    st.caption("This is an AI assistant. Check important decisions with the Training Office.")
 
 # ---- history -------------------------------------------------------------------
 for i, m in enumerate(st.session_state.messages):
@@ -45,14 +60,25 @@ for i, m in enumerate(st.session_state.messages):
         if m.get("note"):
             st.info(m["note"])
         rid = m.get("request_id")
-        if rid and rid not in st.session_state.rated:
-            c1, c2, _ = st.columns([1, 1, 6])
-            if c1.button("👍", key=f"up{i}"):
-                client.send_feedback(rid, 1)
-                st.session_state.rated.add(rid)
-                st.toast("Thanks for your feedback!")
-            # TODO F1 (4 lines): add a 👎 button in c2 with key=f"down{i}" that sends rating -1,
-            #   remembers rid in st.session_state.rated and shows st.toast("Thanks — we will look at this answer.")
+        if rid:
+            if rid not in st.session_state.rated:
+                c1, c2, _ = st.columns([1, 1, 6])
+                c1.button(
+                    "👍",
+                    key=f"up{i}",
+                    help="Helpful",
+                    on_click=submit_feedback,
+                    args=(rid, 1, "Thanks for your feedback!"),
+                )
+                c2.button(
+                    "👎",
+                    key=f"down{i}",
+                    help="Not helpful",
+                    on_click=submit_feedback,
+                    args=(rid, -1, "Thanks — we will look at this answer."),
+                )
+            else:
+                st.caption("✓ Feedback recorded")
 
 # ---- new question ----------------------------------------------------------------
 question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
@@ -65,9 +91,15 @@ if question:
         with st.spinner("Thinking…"):
             result = client.ask(question, st.session_state.session_id)
         if result.ok:
-            st.session_state.messages.append({"role": "assistant", "content": result.answer,
-                                              "sources": format_sources(result.sources),
-                                              "note": status_note(result), "request_id": result.request_id})
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": result.answer,
+                    "sources": format_sources(result.sources),
+                    "note": status_note(result),
+                    "request_id": result.request_id,
+                }
+            )
         else:
             st.session_state.messages.append({"role": "assistant", "content": f"⚠️ {result.error}"})
         st.rerun()
