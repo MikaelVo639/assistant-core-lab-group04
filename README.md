@@ -10,7 +10,8 @@ CSC10014 Lab 03: Engineering a Maintainable Python Service, Group 04.
 ## Current status
 
 The repository contains the integrated OOP service, original refactor materials, working data, pinned
-dependencies, a measured before/after worksheet, and characterisation, unit and integration tests.
+dependencies, a measured before/after worksheet, and characterisation, unit and integration tests,
+plus Lab 7 Streamlit UI materials (`lab07/`) and usability/reflection records (`docs/lab7/`).
 It preserves contributions from Thinh (tools/router/CI), Dang (knowledge), Dat (configuration),
 Man (responders/logging), Thang (models/errors) and Minh (service/CLI and integration).
 AI assistance and technical review are recorded in `docs/ai-use-log.md`.
@@ -64,6 +65,37 @@ over HTTP; its settings (`API_ADMIN_KEY`, `WEATHER_*`, `CAMPUS_*`, `RATE_LIMIT_P
 All errors share one shape: `{"error": {"code": "...", "message": "..."}}`. `tests/test_api.py` mocks the weather
 upstream; `lab04/starter/api-tests/` has curl and Postman checks for a running server.
 
+## Run the UI (Lab 07)
+
+Run both servers from `lab07\starter` in two separate Windows PowerShell terminals:
+
+**Terminal 1 — Backend API (port 8000):**
+
+```powershell
+cd lab07\starter
+..\..\.venv\Scripts\python.exe -m uvicorn assistant_api.main:create_app --factory --reload
+```
+
+**Terminal 2 — Streamlit UI (port 8501):**
+
+```powershell
+cd lab07\starter
+..\..\.venv\Scripts\python.exe -m streamlit run ui/app.py
+```
+
+Open `http://localhost:8501` in your browser. If the API runs on a different host or port, set `ASSISTANT_API_URL` before starting Streamlit:
+
+```powershell
+$env:ASSISTANT_API_URL = "http://127.0.0.1:8001"
+..\..\.venv\Scripts\python.exe -m streamlit run ui/app.py
+```
+
+### Troubleshooting (Lab 07)
+
+- **Backend not reachable**: Make sure Terminal 1 (`uvicorn`) is running and `http://127.0.0.1:8000/health` returns `{"status":"ok",...}`. If port `8000` is occupied, start `uvicorn` with `--port 8001` and set `$env:ASSISTANT_API_URL = "http://127.0.0.1:8001"` in Terminal 2.
+- **`ModuleNotFoundError: No module named 'ui'`**: Run `streamlit run ui/app.py` from `lab07\starter` (not from the repository root or `lab07\starter\ui`).
+- **`streamlit: command not found`**: Invoke Streamlit as a Python module using the virtual environment: `..\..\.venv\Scripts\python.exe -m streamlit run ui/app.py`.
+
 ## Repository layout
 
 ```text
@@ -72,10 +104,12 @@ data/                           Working CSV and JSON data for the new package
 src/assistant_core/             Complete refactored package
 src/assistant_api/              FastAPI backend over the service (Lab 04)
 lab04/                          Lab 04 starter, practice and worksheets
+lab07/                          Lab 07 Streamlit practice, starter UI, and worksheets
 tests/                          Characterisation, unit, and real integration tests
 docs/architecture.md            Target modules, service interface, and design decisions
 docs/ai-use-log.md              Record of AI assistance
 docs/lab3/before_after.md        Individual maintainability worksheet
+docs/lab7/                      Lab 7 usability checklists, observations, and reflections
 pyproject.toml                  Package, pytest, and Ruff configuration
 requirements.txt                Exact dependency versions
 .env.example                    Configuration template
