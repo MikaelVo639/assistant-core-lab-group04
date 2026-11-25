@@ -55,6 +55,8 @@ for i, m in enumerate(st.session_state.messages):
                 client.send_feedback(rid, -1)
                 st.session_state.rated.add(rid)
                 st.toast("Thanks — we will look at this answer.")
+        elif rid and rid in st.session_state.rated:
+            st.caption("✓ Feedback recorded")
 
 # ---- new question ----------------------------------------------------------------
 question = st.chat_input("Ask about fees, offices or the handbook…") or st.session_state.pop("pending", None)
